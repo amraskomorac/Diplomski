@@ -1,12 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Diplomski.Models
+namespace Diplomski.Models;
+
+[Table("korisnici")]
+public class Korisnik
 {
-    public class Korisnik : Controller
-    {
-        public IActionResult Index()
-        {
-            return View();
-        }
-    }
+    [Column("id")]
+    public int Id { get; set; }
+
+    [Column("puno_ime")]
+    public string PunoIme { get; set; } = "";
+
+    [Column("email")]
+    public string Email { get; set; } = "";
+
+    [Column("lozinka_hash")]
+    public string LozinkaHash { get; set; } = "";
+
+    [Column("datum_kreiranja")]
+    public DateTime DatumKreiranja { get; set; }
 }

@@ -2,11 +2,9 @@
 
 namespace Diplomski.Models
 {
-    public class ResetLozinkeViewModel : Controller
+    public class ResetLozinkeViewModel
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public string Token { get; set; } = "";
+        public string NovaLozinka { get; set; } = "";
     }
 }

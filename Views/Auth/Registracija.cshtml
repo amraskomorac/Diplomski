@@ -1,5 +1,45 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model Diplomski.Models.RegistracijaViewModel
+
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="card shadow-sm" style="width: 100%; max-width: 430px;">
+        <div class="card-body p-4">
+            <h3 class="text-center mb-4">Registracija</h3>
+
+            <form asp-controller="Auth" asp-action="Registracija" method="post">
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="PunoIme" class="form-label">Puno ime</label>
+                    <input asp-for="PunoIme" class="form-control" placeholder="Unesite puno ime" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Email adresa</label>
+                    <input asp-for="Email" class="form-control" placeholder="Unesite email" />
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Lozinka" class="form-label">Lozinka</label>
+                    <input asp-for="Lozinka" type="password" class="form-control" placeholder="Unesite lozinku" />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    Registruj se
+                </button>
+            </form>
+
+            <hr />
+
+            <div class="text-center">
+                <p class="mb-2">Već imate račun?</p>
+                <a asp-controller="Auth" asp-action="Prijava" class="btn btn-outline-primary w-100">
+                    Prijavite se
+                </a>
+
+                <a asp-controller="Auth" asp-action="ZaboravljenaLozinka" class="d-block mt-3">
+                    Zaboravljena lozinka?
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

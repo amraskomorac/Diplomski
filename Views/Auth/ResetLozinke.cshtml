@@ -1,5 +1,11 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model Diplomski.Models.ResetLozinkeViewModel
+
+<form asp-action="ResetLozinke" method="post" class="container mt-5" style="max-width:420px">
+    <h3>Reset lozinke</h3>
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <input asp-for="Token" type="hidden" />
+    <input asp-for="NovaLozinka" type="password" class="form-control mb-2" placeholder="Nova lozinka" />
+
+    <button class="btn btn-primary w-100">Spasi novu lozinku</button>
+</form>

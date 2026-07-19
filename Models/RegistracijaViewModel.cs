@@ -2,11 +2,10 @@
 
 namespace Diplomski.Models
 {
-    public class RegistracijaViewModel : Controller
+    public class RegistracijaViewModel
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public string PunoIme { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Lozinka { get; set; } = "";
     }
 }

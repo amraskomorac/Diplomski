@@ -2,11 +2,9 @@
 
 namespace Diplomski.Models
 {
-    public class PrijavaViewModel : Controller
+    public class PrijavaViewModel
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public string Email { get; set; } = "";
+        public string Lozinka { get; set; } = "";
     }
 }

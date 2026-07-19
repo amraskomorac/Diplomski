@@ -2,11 +2,8 @@
 
 namespace Diplomski.Models
 {
-    public class ZaboravljenaLozinkaViewModel : Controller
+    public class ZaboravljenaLozinkaViewModel
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public string Email { get; set; } = "";
     }
 }

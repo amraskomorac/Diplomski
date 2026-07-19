@@ -2,11 +2,9 @@
 
 namespace Diplomski.Models
 {
-    public class ProfilViewModel : Controller
+    public class ProfilViewModel
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public string PunoIme { get; set; } = "";
+        public string Email { get; set; } = "";
     }
 }

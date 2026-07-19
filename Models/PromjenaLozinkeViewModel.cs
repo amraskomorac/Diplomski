@@ -2,11 +2,9 @@
 
 namespace Diplomski.Models
 {
-    public class PromjenaLozinkeViewModel : Controller
+    public class PromjenaLozinkeViewModel
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public string TrenutnaLozinka { get; set; } = "";
+        public string NovaLozinka { get; set; } = "";
     }
 }

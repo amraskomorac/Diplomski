@@ -1,5 +1,16 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model Diplomski.Models.PromjenaLozinkeViewModel
+
+<form asp-action="PromjenaLozinke" method="post" class="container mt-5" style="max-width:420px">
+    <h3>Promjena lozinke</h3>
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    @if (ViewBag.Poruka != null)
+    {
+        <div class="alert alert-success">@ViewBag.Poruka</div>
+    }
+
+    <input asp-for="TrenutnaLozinka" type="password" class="form-control mb-2" placeholder="Trenutna lozinka" />
+    <input asp-for="NovaLozinka" type="password" class="form-control mb-2" placeholder="Nova lozinka" />
+
+    <button class="btn btn-primary w-100">Promijeni lozinku</button>
+</form>
