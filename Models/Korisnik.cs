@@ -19,4 +19,7 @@ public class Korisnik
 
     [Column("datum_kreiranja")]
     public DateTime DatumKreiranja { get; set; }
+
+    public ICollection<Vozilo> Vozila { get; set; } = new List<Vozilo>();
+    public ICollection<Trosak> Troskovi { get; set; } = new List<Trosak>();
 }

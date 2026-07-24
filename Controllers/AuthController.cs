@@ -39,7 +39,8 @@ public class AuthController : Controller
         _context.Korisnici.Add(korisnik);
         await _context.SaveChangesAsync();
 
-        return RedirectToAction("Prijava");
+        await PrijaviKorisnika(korisnik);
+        return RedirectToAction("Dodaj", "Vozila");
     }
 
     public IActionResult Prijava() => View();
@@ -55,6 +56,13 @@ public class AuthController : Controller
             return View(model);
         }
 
+        await PrijaviKorisnika(korisnik);
+
+        return RedirectToAction("Index", "Vozila");
+    }
+
+    private async Task PrijaviKorisnika(Korisnik korisnik)
+    {
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, korisnik.Id.ToString()),
@@ -64,8 +72,6 @@ public class AuthController : Controller
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
-
-        return RedirectToAction("Index", "Profil");
     }
 
     public IActionResult ZaboravljenaLozinka() => View();

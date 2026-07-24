@@ -1,0 +1,53 @@
+@model IEnumerable<Diplomski.Models.Vozilo>
+@{
+    ViewData["Title"] = "Moja vozila";
+}
+
+<div class="container py-5" style="max-width: 950px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Moja vozila</h2>
+            <p class="text-muted mb-0">Pregled vozila koja ste dodali.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Troskovi" asp-action="Index" class="btn btn-outline-primary">Troškovi</a>
+            <a asp-action="Dodaj" class="btn btn-primary">+ Dodaj vozilo</a>
+        </div>
+    </div>
+
+    @if (TempData["Poruka"] != null)
+    {
+        <div class="alert alert-success">@TempData["Poruka"]</div>
+    }
+
+    @if (Model.Any())
+    {
+        <div class="row g-3">
+            @foreach (var vozilo in Model)
+            {
+                <div class="col-md-6">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <h4 class="card-title">@vozilo.Marka @vozilo.Model</h4>
+                            <p class="text-muted mb-3">Godina proizvodnje: @vozilo.GodinaProizvodnje</p>
+                            <dl class="row mb-0 small">
+                                <dt class="col-6">Registracija</dt><dd class="col-6">@vozilo.Registracija</dd>
+                                <dt class="col-6">Gorivo</dt><dd class="col-6">@vozilo.TipGoriva</dd>
+                                <dt class="col-6">Mjenjač</dt><dd class="col-6">@vozilo.TipMjenjaca</dd>
+                                <dt class="col-6">Kilometraža</dt><dd class="col-6">@vozilo.TrenutnaKilometraza.ToString("N0") km</dd>
+                                <dt class="col-6">Datum kupovine</dt><dd class="col-6">@vozilo.DatumKupovine.ToString("dd.MM.yyyy.")</dd>
+                                <dt class="col-6">Datum registracije</dt><dd class="col-6">@vozilo.DatumRegistracije.ToString("dd.MM.yyyy.")</dd>
+                                <dt class="col-6">Mali servis</dt><dd class="col-6">@vozilo.KilometrazaMaliServis.ToString("N0") km</dd>
+                                <dt class="col-6">Veliki servis</dt><dd class="col-6">@vozilo.KilometrazaVelikiServis.ToString("N0") km</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-light border">Još nemate dodanih vozila. Kliknite „Dodaj vozilo“ za početak.</div>
+    }
+</div>

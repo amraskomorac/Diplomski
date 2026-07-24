@@ -1,0 +1,19 @@
+@model IEnumerable<Diplomski.Models.Trosak>
+@{
+    ViewData["Title"] = "Troškovi";
+}
+
+<div class="container py-5" style="max-width: 850px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div><h2 class="mb-1">Troškovi</h2><p class="text-muted mb-0">Vaši evidentirani troškovi.</p></div>
+        <div class="d-flex gap-2"><a asp-controller="Vozila" asp-action="Index" class="btn btn-outline-secondary">Moja vozila</a><a asp-action="Dodaj" class="btn btn-primary">+ Dodaj trošak</a></div>
+    </div>
+    @if (TempData["Poruka"] != null) { <div class="alert alert-success">@TempData["Poruka"]</div> }
+    @if (Model.Any())
+    {
+        <div class="card shadow-sm border-0"><div class="table-responsive"><table class="table mb-0"><thead><tr><th>Tip troška</th><th class="text-end">Iznos</th></tr></thead><tbody>
+        @foreach (var trosak in Model) { <tr><td>@trosak.Tip</td><td class="text-end">@trosak.Iznos.ToString("N2") KM</td></tr> }
+        </tbody></table></div></div>
+    }
+    else { <div class="alert alert-light border">Još nemate evidentiranih troškova.</div> }
+</div>
