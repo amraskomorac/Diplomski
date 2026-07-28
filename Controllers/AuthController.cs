@@ -2,12 +2,14 @@
 using Diplomski.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace DiplomskiApp.Controllers;
 
+[AllowAnonymous]
 public class AuthController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -58,7 +60,7 @@ public class AuthController : Controller
 
         await PrijaviKorisnika(korisnik);
 
-        return RedirectToAction("Index", "Vozila");
+        return RedirectToAction("Index", "Dashboard");
     }
 
     private async Task PrijaviKorisnika(Korisnik korisnik)

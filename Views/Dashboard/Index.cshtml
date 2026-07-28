@@ -1,0 +1,57 @@
+@model Diplomski.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Početna stranica";
+}
+
+<div class="container py-5" style="max-width: 1000px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h2 class="mb-1">Početna stranica</h2>
+            <p class="text-muted mb-0">Pregled vašeg vozila i održavanja.</p>
+        </div>
+        @if (Model.Vozila.Any())
+        {
+            <form method="get" class="d-flex align-items-center gap-2">
+                <label for="voziloId" class="form-label mb-0">Odabrano vozilo</label>
+                <select id="voziloId" name="voziloId" class="form-select" onchange="this.form.submit()">
+                    @foreach (var vozilo in Model.Vozila)
+                    {
+                        <option value="@vozilo.Id" selected="@(Model.OdabranoVozilo?.Id == vozilo.Id)">@vozilo.Marka @vozilo.Model</option>
+                    }
+                </select>
+            </form>
+        }
+    </div>
+
+    @if (Model.OdabranoVozilo is null)
+    {
+        <div class="alert alert-light border">Još nemate dodano vozilo. <a asp-controller="Vozila" asp-action="Dodaj">Dodajte prvo vozilo.</a></div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body p-4">
+                <h3 class="mb-0">@Model.OdabranoVozilo.Marka @Model.OdabranoVozilo.Model</h3>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Trenutna kilometraža</div><div class="fs-4 fw-semibold">@Model.OdabranoVozilo.TrenutnaKilometraza.ToString("N0") km</div></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Registracija</div><div class="fs-5 fw-semibold">Registracija ističe za: @Model.DaniDoIstekaRegistracije dana - @Model.DatumIstekaRegistracije.ToString("dd.MM.yyyy.")</div></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Trošak ove godine</div><div class="fs-4 fw-semibold">@Model.UkupniTrosakOveGodine.ToString("N2") KM</div></div></div></div>
+            <div class="col-md-6"><div class="card h-100 shadow-sm border-0"><div class="card-body"><h5>Mali servis</h5><div class="text-muted">Posljednji mali servis</div><div class="fw-semibold mb-3">@Model.PosljednjiMaliServis</div><div class="text-muted">Sljedeći mali servis</div><div class="fs-5 fw-semibold">@Model.SljedeciMaliServis</div></div></div></div>
+            <div class="col-md-6"><div class="card h-100 shadow-sm border-0"><div class="card-body"><h5>Veliki servis</h5><div class="text-muted">Posljednji veliki servis</div><div class="fw-semibold mb-3">@Model.PosljednjiVelikiServis</div><div class="text-muted">Sljedeći veliki servis</div><div class="fs-5 fw-semibold">@Model.SljedeciVelikiServis</div></div></div></div>
+        </div>
+
+        <div class="card shadow-sm border-0"><div class="card-body p-4"><h4>Upozorenja</h4>
+            @if (Model.Upozorenja.Any())
+            {
+                <ul class="mb-0">@foreach (var upozorenje in Model.Upozorenja) { <li>@upozorenje</li> }</ul>
+            }
+            else
+            {
+                <p class="mb-0 text-success">Nema aktivnih upozorenja.</p>
+            }
+        </div></div>
+    }
+</div>

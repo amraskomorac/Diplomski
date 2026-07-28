@@ -1,31 +1,64 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+:root {
+  --autocare-glavna: #146c7b;
+  --autocare-tamna: #0f5360;
+  --autocare-svijetla: #eef8f9;
 }
 
 html {
-  position: relative;
+  font-size: 16px;
   min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+  min-height: 100vh;
+  margin: 0;
+  background-color: var(--autocare-svijetla);
+  color: #1f2933;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+.autocare-zaglavlje {
+  background-color: var(--autocare-tamna);
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+.navbar-brand {
+  font-weight: 700;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+  color: #fff;
+}
+
+.btn-primary {
+  background-color: var(--autocare-glavna);
+  border-color: var(--autocare-glavna);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--autocare-tamna);
+  border-color: var(--autocare-tamna);
+}
+
+.btn-outline-primary {
+  color: var(--autocare-glavna);
+  border-color: var(--autocare-glavna);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--autocare-glavna);
+  border-color: var(--autocare-glavna);
+}
+
+.card {
+  background-color: #fff;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--autocare-glavna);
+  box-shadow: 0 0 0 0.2rem rgba(20, 108, 123, 0.2);
 }

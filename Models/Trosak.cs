@@ -18,6 +18,17 @@ public class Trosak
     [Column("iznos")]
     public decimal Iznos { get; set; }
 
+    [DataType(DataType.Date)]
+    [Column("datum")]
+    public DateTime Datum { get; set; }
+
+    [Required(ErrorMessage = "Odaberite vozilo.")]
+    [Column("vozilo_id")]
+    public int? VoziloId { get; set; }
+
+    [ForeignKey(nameof(VoziloId))]
+    public Vozilo? Vozilo { get; set; }
+
     [Column("korisnik_id")]
     public int KorisnikId { get; set; }
 
