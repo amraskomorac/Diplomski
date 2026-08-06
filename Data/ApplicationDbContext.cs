@@ -14,6 +14,7 @@ namespace Diplomski.Data
         public DbSet<TokenZaResetLozinke> TokeniZaResetLozinke { get; set; }
         public DbSet<Vozilo> Vozila { get; set; }
         public DbSet<Trosak> Troskovi { get; set; }
+        public DbSet<Servis> Servisi { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,6 +30,18 @@ namespace Diplomski.Data
                 .HasOne(t => t.Korisnik)
                 .WithMany(k => k.Troskovi)
                 .HasForeignKey(t => t.KorisnikId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Servis>()
+                .HasOne(s => s.Vozilo)
+                .WithMany()
+                .HasForeignKey(s => s.VoziloId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Servis>()
+                .HasOne(s => s.Korisnik)
+                .WithMany(k => k.Servisi)
+                .HasForeignKey(s => s.KorisnikId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

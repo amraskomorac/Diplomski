@@ -22,4 +22,5 @@ public class Korisnik
 
     public ICollection<Vozilo> Vozila { get; set; } = new List<Vozilo>();
     public ICollection<Trosak> Troskovi { get; set; } = new List<Trosak>();
+    public ICollection<Servis> Servisi { get; set; } = new List<Servis>();
 }

@@ -1,57 +1,61 @@
 @model Diplomski.Models.DashboardViewModel
-@{
-    ViewData["Title"] = "Početna stranica";
-}
+@{ ViewData["Title"] = "Pocetna stranica"; }
 
 <div class="container py-5" style="max-width: 1000px;">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-        <div>
-            <h2 class="mb-1">Početna stranica</h2>
-            <p class="text-muted mb-0">Pregled vašeg vozila i održavanja.</p>
-        </div>
+        <div><h2 class="mb-1">Pocetna stranica</h2><p class="text-muted mb-0">Pregled vaseg vozila i odrzavanja.</p></div>
         @if (Model.Vozila.Any())
         {
             <form method="get" class="d-flex align-items-center gap-2">
                 <label for="voziloId" class="form-label mb-0">Odabrano vozilo</label>
                 <select id="voziloId" name="voziloId" class="form-select" onchange="this.form.submit()">
                     @foreach (var vozilo in Model.Vozila)
-                    {
-                        <option value="@vozilo.Id" selected="@(Model.OdabranoVozilo?.Id == vozilo.Id)">@vozilo.Marka @vozilo.Model</option>
-                    }
+                    { <option value="@vozilo.Id" selected="@(Model.OdabranoVozilo?.Id == vozilo.Id)">@vozilo.Marka @vozilo.Model</option> }
                 </select>
             </form>
         }
     </div>
-
     @if (Model.OdabranoVozilo is null)
-    {
-        <div class="alert alert-light border">Još nemate dodano vozilo. <a asp-controller="Vozila" asp-action="Dodaj">Dodajte prvo vozilo.</a></div>
-    }
+    { <div class="alert alert-light border">Jos nemate dodano vozilo. <a asp-controller="Vozila" asp-action="Dodaj">Dodajte prvo vozilo.</a></div> }
     else
     {
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-body p-4">
-                <h3 class="mb-0">@Model.OdabranoVozilo.Marka @Model.OdabranoVozilo.Model</h3>
-            </div>
-        </div>
-
+        <div class="card shadow-sm border-0 mb-4"><div class="card-body p-4"><h3 class="mb-0">@Model.OdabranoVozilo.Marka @Model.OdabranoVozilo.Model</h3></div></div>
         <div class="row g-3 mb-4">
-            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Trenutna kilometraža</div><div class="fs-4 fw-semibold">@Model.OdabranoVozilo.TrenutnaKilometraza.ToString("N0") km</div></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Registracija</div><div class="fs-5 fw-semibold">Registracija ističe za: @Model.DaniDoIstekaRegistracije dana - @Model.DatumIstekaRegistracije.ToString("dd.MM.yyyy.")</div></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Trošak ove godine</div><div class="fs-4 fw-semibold">@Model.UkupniTrosakOveGodine.ToString("N2") KM</div></div></div></div>
-            <div class="col-md-6"><div class="card h-100 shadow-sm border-0"><div class="card-body"><h5>Mali servis</h5><div class="text-muted">Posljednji mali servis</div><div class="fw-semibold mb-3">@Model.PosljednjiMaliServis</div><div class="text-muted">Sljedeći mali servis</div><div class="fs-5 fw-semibold">@Model.SljedeciMaliServis</div></div></div></div>
-            <div class="col-md-6"><div class="card h-100 shadow-sm border-0"><div class="card-body"><h5>Veliki servis</h5><div class="text-muted">Posljednji veliki servis</div><div class="fw-semibold mb-3">@Model.PosljednjiVelikiServis</div><div class="text-muted">Sljedeći veliki servis</div><div class="fs-5 fw-semibold">@Model.SljedeciVelikiServis</div></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Trenutna kilometraza</div><div class="fs-4 fw-semibold">@Model.OdabranoVozilo.TrenutnaKilometraza.ToString("N0") km</div></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Registracija</div><div class="fs-5 fw-semibold">Istice za @Model.DaniDoIstekaRegistracije dana<br /><small>@Model.DatumIstekaRegistracije.ToString("dd.MM.yyyy.")</small></div></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Trosak ove godine</div><div class="fs-4 fw-semibold">@Model.UkupniTrosakOveGodine.ToString("N2") KM</div></div></div></div>
+            <div class="col-md-6"><div class="card h-100 shadow-sm border-0"><div class="card-body"><h5>Mali servis</h5><div class="text-muted">Posljednji mali servis</div><div class="fw-semibold mb-3">@Model.PosljednjiMaliServis</div><div class="text-muted">Sljedeci mali servis</div><div class="fs-5 fw-semibold">@Model.SljedeciMaliServis</div></div></div></div>
+            <div class="col-md-6"><div class="card h-100 shadow-sm border-0"><div class="card-body"><h5>Veliki servis</h5><div class="text-muted">Posljednji veliki servis</div><div class="fw-semibold mb-3">@Model.PosljednjiVelikiServis</div><div class="text-muted">Sljedeci veliki servis</div><div class="fs-5 fw-semibold">@Model.SljedeciVelikiServis</div></div></div></div>
         </div>
 
-        <div class="card shadow-sm border-0"><div class="card-body p-4"><h4>Upozorenja</h4>
-            @if (Model.Upozorenja.Any())
+        <section class="card shadow-sm border-0 podsjetnici-kartica"><div class="card-body p-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4"><div><h4 class="mb-1">Podsjetnici</h4><p class="text-muted mb-0">Pracenje rokova za vase vozilo.</p></div>
+                @if (Model.AktivneObavijesti.Any()) { <span class="badge text-bg-warning">@Model.AktivneObavijesti.Count aktivno</span> }
+            </div>
+            @if (Model.Podsjetnici.Any())
             {
-                <ul class="mb-0">@foreach (var upozorenje in Model.Upozorenja) { <li>@upozorenje</li> }</ul>
+                <div class="row g-3">
+                    @foreach (var podsjetnik in Model.Podsjetnici)
+                    {
+                        var stanje = podsjetnik.JeHitno ? "podsjetnik-hitno" : "podsjetnik-uskoro";
+                        <div class="col-md-6"><article class="podsjetnik @stanje"><div class="podsjetnik-ikona"><i class="bi @podsjetnik.Ikona"></i></div><div class="flex-grow-1"><h5 class="mb-3">@podsjetnik.Naziv</h5><dl class="podsjetnik-detalji mb-3"><div><dt>Zadnji put</dt><dd>@podsjetnik.ZadnjiPut</dd></div><div><dt>Interval</dt><dd>@podsjetnik.Interval</dd></div><div><dt>Trenutno</dt><dd>@podsjetnik.Trenutno</dd></div></dl><p class="mb-0 fw-semibold @(podsjetnik.JeHitno ? "text-danger" : "text-warning-emphasis")">@podsjetnik.Status</p></div></article></div>
+                    }
+                </div>
             }
             else
             {
-                <p class="mb-0 text-success">Nema aktivnih upozorenja.</p>
+                <p class="mb-0 text-success"><i class="bi bi-check-circle me-2"></i>Nema podsjetnika koji zahtijevaju paznju.</p>
             }
-        </div></div>
+        </div></section>
     }
 </div>
+
+@if (Model.PrikaziObavijesti)
+{
+    <div class="modal fade" id="obavijestiModal" tabindex="-1" aria-labelledby="obavijestiModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow"><div class="modal-header"><h5 class="modal-title" id="obavijestiModalLabel"><i class="bi bi-bell-fill me-2"></i>Obavijesti za vozilo</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvori"></button></div><div class="modal-body">@foreach (var obavijest in Model.AktivneObavijesti) { <div class="d-flex gap-2 mb-3"><i class="bi bi-bell text-warning"></i><div><strong>@obavijest.Naziv</strong><br /><span class="text-muted">@obavijest.Status</span></div></div> }</div><div class="modal-footer"><button type="button" class="btn btn-primary" data-bs-dismiss="modal">U redu</button></div></div></div></div>
+}
+
+@section Scripts {
+    @if (Model.PrikaziObavijesti)
+    { <script>document.addEventListener('DOMContentLoaded', function () { new bootstrap.Modal(document.getElementById('obavijestiModal')).show(); });</script> }
+}
