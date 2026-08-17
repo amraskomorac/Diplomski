@@ -75,3 +75,8 @@ body {
 @media (max-width: 575.98px) {
   .podsjetnik-detalji { grid-template-columns: 1fr; gap: .35rem; }
 }
+
+.timeline { border-left: 2px solid #d7e7ea; margin-left: .45rem; padding-left: 1.4rem; }
+.timeline-stavka { position: relative; padding-bottom: 1.25rem; }
+.timeline-stavka::before { content: ""; position: absolute; left: -1.78rem; top: .35rem; width: .7rem; height: .7rem; border-radius: 50%; background: var(--autocare-glavna); }
+.timeline-datum { color: #6c757d; font-size: .85rem; margin-bottom: .25rem; text-transform: capitalize; }

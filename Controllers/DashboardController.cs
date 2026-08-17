@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Globalization;
 using Diplomski.Data;
 using Diplomski.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +30,11 @@ public class DashboardController : Controller
         model.DaniDoIstekaRegistracije = (model.DatumIstekaRegistracije - DateTime.Today).Days;
         var troskovi = await _context.Troskovi.Where(t => t.KorisnikId == korisnikId && t.VoziloId == odabranoVozilo.Id && t.Datum.Year == DateTime.Today.Year).SumAsync(t => (decimal?)t.Iznos) ?? 0;
         var servisi = await _context.Servisi.Where(s => s.KorisnikId == korisnikId && s.VoziloId == odabranoVozilo.Id && s.Datum.Year == DateTime.Today.Year).SumAsync(s => (decimal?)s.Cijena) ?? 0;
-        model.UkupniTrosakOveGodine = troskovi + servisi;
+        var gorivo = await _context.Goriva.Where(g => g.KorisnikId == korisnikId && g.VoziloId == odabranoVozilo.Id && g.Datum.Year == DateTime.Today.Year).SumAsync(g => (decimal?)g.Cijena) ?? 0;
+        model.UkupniTrosakOveGodine = troskovi + servisi + gorivo;
+        model.HistorijaOdrzavanja = await _context.Servisi.Where(s => s.KorisnikId == korisnikId && s.VoziloId == odabranoVozilo.Id).OrderByDescending(s => s.Datum).Take(12).Select(s => new StavkaHistorijeOdrzavanja { Datum = s.Datum, Naziv = s.Tip }).ToListAsync();
+        model.HistorijaOdrzavanja.Add(new StavkaHistorijeOdrzavanja { Datum = odabranoVozilo.DatumRegistracije, Naziv = "Registracija" });
+        model.HistorijaOdrzavanja = model.HistorijaOdrzavanja.OrderByDescending(h => h.Datum).ToList();
         model.PosljednjiMaliServis = PrikaziPosljednjiServis(odabranoVozilo.KilometrazaMaliServis);
         model.SljedeciMaliServis = PrikaziSljedeciServis(odabranoVozilo.TrenutnaKilometraza, odabranoVozilo.KilometrazaMaliServis, 10_000);
         model.PosljednjiVelikiServis = PrikaziPosljednjiServis(odabranoVozilo.KilometrazaVelikiServis);

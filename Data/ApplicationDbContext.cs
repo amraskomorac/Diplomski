@@ -15,6 +15,7 @@ namespace Diplomski.Data
         public DbSet<Vozilo> Vozila { get; set; }
         public DbSet<Trosak> Troskovi { get; set; }
         public DbSet<Servis> Servisi { get; set; }
+        public DbSet<Gorivo> Goriva { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -15,6 +15,13 @@ public class DashboardViewModel
     public List<PodsjetnikViewModel> Podsjetnici { get; set; } = [];
     public List<PodsjetnikViewModel> AktivneObavijesti { get; set; } = [];
     public bool PrikaziObavijesti { get; set; }
+    public List<StavkaHistorijeOdrzavanja> HistorijaOdrzavanja { get; set; } = [];
+}
+
+public class StavkaHistorijeOdrzavanja
+{
+    public DateTime Datum { get; set; }
+    public string Naziv { get; set; } = "";
 }
 
 public class PodsjetnikViewModel
