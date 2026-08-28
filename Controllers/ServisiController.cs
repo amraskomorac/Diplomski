@@ -57,6 +57,9 @@ public class ServisiController : Controller
         servis.KorisnikId = korisnikId;
         servis.PutanjaRacuna = await SacuvajRacun(racunDatoteka);
         _context.Servisi.Add(servis);
+        var vozilo = await _context.Vozila.FirstAsync(v => v.Id == servis.VoziloId && v.KorisnikId == korisnikId);
+        if (servis.Kilometraza > vozilo.TrenutnaKilometraza)
+            vozilo.TrenutnaKilometraza = servis.Kilometraza;
         await _context.SaveChangesAsync();
 
         TempData["Poruka"] = "Servis je uspješno dodan.";
@@ -107,6 +110,9 @@ public class ServisiController : Controller
         postojeciServis.Serviser = servis.Serviser;
         postojeciServis.Napomena = servis.Napomena;
         postojeciServis.VoziloId = servis.VoziloId;
+        var vozilo = await _context.Vozila.FirstAsync(v => v.Id == servis.VoziloId && v.KorisnikId == korisnikId);
+        if (servis.Kilometraza > vozilo.TrenutnaKilometraza)
+            vozilo.TrenutnaKilometraza = servis.Kilometraza;
         await _context.SaveChangesAsync();
 
         TempData["Poruka"] = "Servis je uspješno izmijenjen.";
@@ -155,8 +161,8 @@ public class ServisiController : Controller
             return;
         }
 
-        if (kilometrazaServisa > vozilo.TrenutnaKilometraza)
-            ModelState.AddModelError(nameof(Servis.Kilometraza), "Kilometraža servisa ne može biti veća od trenutne kilometraže vozila.");
+        if (kilometrazaServisa < vozilo.TrenutnaKilometraza)
+            ModelState.AddModelError(nameof(Servis.Kilometraza), $"Kilometraža servisa ne može biti manja od trenutne kilometraže vozila ({vozilo.TrenutnaKilometraza:N0} km).");
     }
 
     private void ValidirajRacun(IFormFile? racunDatoteka)

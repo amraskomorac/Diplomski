@@ -13,7 +13,6 @@ namespace Diplomski.Data
         public DbSet<Korisnik> Korisnici { get; set; }
         public DbSet<TokenZaResetLozinke> TokeniZaResetLozinke { get; set; }
         public DbSet<Vozilo> Vozila { get; set; }
-        public DbSet<Trosak> Troskovi { get; set; }
         public DbSet<Servis> Servisi { get; set; }
         public DbSet<Gorivo> Goriva { get; set; }
 
@@ -25,12 +24,6 @@ namespace Diplomski.Data
                 .HasOne(v => v.Korisnik)
                 .WithMany(k => k.Vozila)
                 .HasForeignKey(v => v.KorisnikId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Trosak>()
-                .HasOne(t => t.Korisnik)
-                .WithMany(k => k.Troskovi)
-                .HasForeignKey(t => t.KorisnikId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Servis>()

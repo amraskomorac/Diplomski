@@ -36,12 +36,13 @@ public class GorivoController : Controller
     public async Task<IActionResult> Dodaj(Gorivo gorivo)
     {
         var korisnikId = TrenutniKorisnikId();
-        if (!await _context.Vozila.AnyAsync(v => v.Id == gorivo.VoziloId && v.KorisnikId == korisnikId)) ModelState.AddModelError(nameof(Gorivo.VoziloId), "Odaberite svoje vozilo.");
+        var vozilo = await _context.Vozila.FirstOrDefaultAsync(v => v.Id == gorivo.VoziloId && v.KorisnikId == korisnikId);
+        if (vozilo is null) ModelState.AddModelError(nameof(Gorivo.VoziloId), "Odaberite svoje vozilo.");
+        else if (gorivo.Kilometraza < vozilo.TrenutnaKilometraza) ModelState.AddModelError(nameof(Gorivo.Kilometraza), $"Kilometraza ne moze biti manja od trenutne kilometraze vozila ({vozilo.TrenutnaKilometraza:N0} km).");
         if (gorivo.Datum.Date > DateTime.Today) ModelState.AddModelError(nameof(Gorivo.Datum), "Datum ne moze biti u buducnosti.");
         if (!ModelState.IsValid) { await UcitajVozila(); return View(gorivo); }
         gorivo.KorisnikId = korisnikId; _context.Goriva.Add(gorivo);
-        var vozilo = await _context.Vozila.FirstAsync(v => v.Id == gorivo.VoziloId && v.KorisnikId == korisnikId);
-        if (gorivo.Kilometraza > vozilo.TrenutnaKilometraza) vozilo.TrenutnaKilometraza = gorivo.Kilometraza;
+        if (vozilo is not null && gorivo.Kilometraza > vozilo.TrenutnaKilometraza) vozilo.TrenutnaKilometraza = gorivo.Kilometraza;
         await _context.SaveChangesAsync();
         TempData["Poruka"] = "Unos goriva je sacuvan."; return RedirectToAction(nameof(Index), new { voziloId = gorivo.VoziloId });
     }
@@ -60,12 +61,13 @@ public class GorivoController : Controller
         var postojece = await PronadjiGorivo(id);
         if (postojece is null) return NotFound();
         var korisnikId = TrenutniKorisnikId();
-        if (!await _context.Vozila.AnyAsync(v => v.Id == gorivo.VoziloId && v.KorisnikId == korisnikId)) ModelState.AddModelError(nameof(Gorivo.VoziloId), "Odaberite svoje vozilo.");
+        var vozilo = await _context.Vozila.FirstOrDefaultAsync(v => v.Id == gorivo.VoziloId && v.KorisnikId == korisnikId);
+        if (vozilo is null) ModelState.AddModelError(nameof(Gorivo.VoziloId), "Odaberite svoje vozilo.");
+        else if (gorivo.Kilometraza < vozilo.TrenutnaKilometraza) ModelState.AddModelError(nameof(Gorivo.Kilometraza), $"Kilometraza ne moze biti manja od trenutne kilometraze vozila ({vozilo.TrenutnaKilometraza:N0} km).");
         if (gorivo.Datum.Date > DateTime.Today) ModelState.AddModelError(nameof(Gorivo.Datum), "Datum ne moze biti u buducnosti.");
         if (!ModelState.IsValid) { gorivo.Id = id; await UcitajVozila(); return View(gorivo); }
         postojece.VoziloId = gorivo.VoziloId; postojece.Datum = gorivo.Datum; postojece.Litara = gorivo.Litara; postojece.Cijena = gorivo.Cijena; postojece.Kilometraza = gorivo.Kilometraza;
-        var vozilo = await _context.Vozila.FirstAsync(v => v.Id == gorivo.VoziloId && v.KorisnikId == korisnikId);
-        if (gorivo.Kilometraza > vozilo.TrenutnaKilometraza) vozilo.TrenutnaKilometraza = gorivo.Kilometraza;
+        if (vozilo is not null && gorivo.Kilometraza > vozilo.TrenutnaKilometraza) vozilo.TrenutnaKilometraza = gorivo.Kilometraza;
         await _context.SaveChangesAsync();
         TempData["Poruka"] = "Unos goriva je izmijenjen."; return RedirectToAction(nameof(Index), new { voziloId = gorivo.VoziloId });
     }

@@ -20,7 +20,11 @@ public class DashboardController : Controller
         var korisnikId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var vozila = await _context.Vozila.Where(v => v.KorisnikId == korisnikId)
             .OrderBy(v => v.Marka).ThenBy(v => v.Model).ToListAsync();
-        var odabranoVozilo = voziloId.HasValue ? vozila.FirstOrDefault(v => v.Id == voziloId.Value) : vozila.FirstOrDefault();
+        // Kada korisnik ima vise vozila, najprije treba odabrati ono za koje zeli
+        // vidjeti dashboard. Za jedno vozilo zadrzavamo direktan prikaz dashboarda.
+        var odabranoVozilo = voziloId.HasValue
+            ? vozila.FirstOrDefault(v => v.Id == voziloId.Value)
+            : vozila.Count == 1 ? vozila.First() : null;
         var model = new DashboardViewModel { Vozila = vozila, OdabranoVozilo = odabranoVozilo };
 
         if (odabranoVozilo is null)
@@ -28,12 +32,21 @@ public class DashboardController : Controller
 
         model.DatumIstekaRegistracije = odabranoVozilo.DatumRegistracije.Date.AddYears(1);
         model.DaniDoIstekaRegistracije = (model.DatumIstekaRegistracije - DateTime.Today).Days;
-        var troskovi = await _context.Troskovi.Where(t => t.KorisnikId == korisnikId && t.VoziloId == odabranoVozilo.Id && t.Datum.Year == DateTime.Today.Year).SumAsync(t => (decimal?)t.Iznos) ?? 0;
         var servisi = await _context.Servisi.Where(s => s.KorisnikId == korisnikId && s.VoziloId == odabranoVozilo.Id && s.Datum.Year == DateTime.Today.Year).SumAsync(s => (decimal?)s.Cijena) ?? 0;
         var gorivo = await _context.Goriva.Where(g => g.KorisnikId == korisnikId && g.VoziloId == odabranoVozilo.Id && g.Datum.Year == DateTime.Today.Year).SumAsync(g => (decimal?)g.Cijena) ?? 0;
-        model.UkupniTrosakOveGodine = troskovi + servisi + gorivo;
-        model.HistorijaOdrzavanja = await _context.Servisi.Where(s => s.KorisnikId == korisnikId && s.VoziloId == odabranoVozilo.Id).OrderByDescending(s => s.Datum).Take(12).Select(s => new StavkaHistorijeOdrzavanja { Datum = s.Datum, Naziv = s.Tip }).ToListAsync();
-        model.HistorijaOdrzavanja.Add(new StavkaHistorijeOdrzavanja { Datum = odabranoVozilo.DatumRegistracije, Naziv = "Registracija" });
+        model.UkupniTrosakOveGodine = servisi + gorivo;
+        model.HistorijaOdrzavanja = await _context.Servisi.Where(s => s.KorisnikId == korisnikId && s.VoziloId == odabranoVozilo.Id).OrderByDescending(s => s.Datum).Take(12).Select(s => new StavkaHistorijeOdrzavanja
+        {
+            ServisId = s.Id,
+            Datum = s.Datum,
+            Naziv = s.Tip,
+            Kilometraza = s.Kilometraza,
+            Cijena = s.Cijena,
+            Serviser = s.Serviser,
+            Napomena = s.Napomena,
+            PutanjaRacuna = s.PutanjaRacuna
+        }).ToListAsync();
+        model.HistorijaOdrzavanja.Add(new StavkaHistorijeOdrzavanja { Datum = odabranoVozilo.DatumRegistracije, Naziv = "Registracija", JeRegistracija = true });
         model.HistorijaOdrzavanja = model.HistorijaOdrzavanja.OrderByDescending(h => h.Datum).ToList();
         model.PosljednjiMaliServis = PrikaziPosljednjiServis(odabranoVozilo.KilometrazaMaliServis);
         model.SljedeciMaliServis = PrikaziSljedeciServis(odabranoVozilo.TrenutnaKilometraza, odabranoVozilo.KilometrazaMaliServis, 10_000);
@@ -46,6 +59,31 @@ public class DashboardController : Controller
         if (model.PrikaziObavijesti)
             HttpContext.Session.SetString(obavijestiPrikazaneKey, "true");
         return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AzurirajKilometrazu(int voziloId, int kilometraza)
+    {
+        var korisnikId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var vozilo = await _context.Vozila.FirstOrDefaultAsync(v => v.Id == voziloId && v.KorisnikId == korisnikId);
+
+        if (vozilo is null)
+            return NotFound();
+
+        if (kilometraza < vozilo.TrenutnaKilometraza)
+        {
+            TempData["GreskaKilometraza"] = $"Nova kilometraza ne moze biti manja od trenutne ({vozilo.TrenutnaKilometraza:N0} km).";
+            return RedirectToAction(nameof(Index), new { voziloId });
+        }
+
+        var jeIstaKilometraza = kilometraza == vozilo.TrenutnaKilometraza;
+        vozilo.TrenutnaKilometraza = kilometraza;
+        await _context.SaveChangesAsync();
+        TempData["PorukaKilometraza"] = jeIstaKilometraza
+            ? "Kilometraza je vec azurna."
+            : "Kilometraza je uspjesno azurirana.";
+        return RedirectToAction(nameof(Index), new { voziloId });
     }
 
     private static string PrikaziPosljednjiServis(int kilometraza) => kilometraza > 0 ? $"Na {kilometraza:N0} km" : "Nije evidentiran.";

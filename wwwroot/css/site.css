@@ -80,3 +80,37 @@ body {
 .timeline-stavka { position: relative; padding-bottom: 1.25rem; }
 .timeline-stavka::before { content: ""; position: absolute; left: -1.78rem; top: .35rem; width: .7rem; height: .7rem; border-radius: 50%; background: var(--autocare-glavna); }
 .timeline-datum { color: #6c757d; font-size: .85rem; margin-bottom: .25rem; text-transform: capitalize; }
+
+.historija-kartica { overflow: hidden; border: 2px solid #b8d1d6; border-radius: .75rem; background: #fff; }
+.historija-lista { padding: 1rem; }
+.historija-filteri { display: flex; flex-direction: column; align-items: flex-start; gap: .45rem; }
+.historija-filter-naslov { color: #60737a; font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.historija-filter { padding: .35rem .7rem; border: 1px solid #b8d1d6; border-radius: 999px; background: #fff; color: #31545b; font-size: .85rem; }
+.historija-filter:hover, .historija-filter.aktivan { border-color: var(--autocare-glavna); background: var(--autocare-glavna); color: #fff; }
+.historija-stavka { position: relative; display: block; width: 100%; margin-bottom: .75rem; padding: 1rem 1rem 1rem 1.25rem; border: 1px solid #dce6e8; border-left: 4px solid var(--autocare-glavna); border-radius: .5rem; background: #fff; color: #1f2933; transition: background-color .18s ease, transform .18s ease, box-shadow .18s ease; }
+button.historija-stavka:hover { transform: translateY(-2px); background: #f7fbfc; box-shadow: 0 .3rem .8rem rgba(31, 41, 51, .1); }
+.historija-stavka-neaktivna { border-left-color: #9aa7ad; }
+.historija-stavka:last-child { margin-bottom: 0; }
+.historija-kategorija { display: inline-block; margin-bottom: .6rem; padding: .2rem .55rem; border-radius: .25rem; background: var(--autocare-svijetla); color: var(--autocare-tamna); font-size: .75rem; font-weight: 700; }
+.historija-sazetak { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.historija-sazetak h5, .historija-stavka-neaktivna h5 { font-size: 1rem; }
+.servis-detalji-modal { border: 0; border-radius: .75rem; }
+.servis-glavni-podaci { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; padding: 1rem; border-radius: .5rem; background: var(--autocare-svijetla); }
+.servis-glavni-podaci div { display: flex; flex-direction: column; gap: .2rem; }
+.servis-glavni-podaci span { color: #60737a; font-size: .78rem; }
+.servis-detalj-sekcija { margin-top: 1.5rem; }
+.servis-detalj-sekcija h6 { margin-bottom: .5rem; color: var(--autocare-tamna); font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+
+.vozila-izbor { max-width: 860px; margin: 2rem auto 0; }
+.vozilo-izbor-kartica { --vozilo-boja: #146c7b; --vozilo-svijetla: #eef8f9; display: block; height: 100%; padding: 1.5rem; border: 2px solid var(--vozilo-boja); border-radius: .75rem; background: #fff; box-shadow: none; color: #1f2933; text-decoration: none; transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease; }
+.vozilo-izbor-kartica:hover { color: #1f2933; transform: translateY(-3px); background: var(--vozilo-svijetla); box-shadow: 0 .5rem 1rem rgba(31, 41, 51, .12); }
+.vozilo-varijanta-2 { --vozilo-boja: #376c3a; --vozilo-svijetla: #f0f8f0; }
+.vozilo-varijanta-3 { --vozilo-boja: #6b549d; --vozilo-svijetla: #f5f1fc; }
+.vozilo-varijanta-4 { --vozilo-boja: #ad5e20; --vozilo-svijetla: #fff5eb; }
+.vozilo-izbor-kartica h3 { margin: 0 0 .45rem; color: var(--vozilo-boja); font-size: 1.3rem; }
+.vozilo-registracija { margin: 0; color: #52616b; font-weight: 600; letter-spacing: .05em; }
+
+@media (max-width: 575.98px) {
+  .historija-sazetak { align-items: flex-start; flex-direction: column; gap: .4rem; }
+  .servis-glavni-podaci { grid-template-columns: 1fr; }
+}

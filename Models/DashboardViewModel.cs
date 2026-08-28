@@ -20,8 +20,15 @@ public class DashboardViewModel
 
 public class StavkaHistorijeOdrzavanja
 {
+    public int? ServisId { get; set; }
     public DateTime Datum { get; set; }
     public string Naziv { get; set; } = "";
+    public int? Kilometraza { get; set; }
+    public decimal? Cijena { get; set; }
+    public string? Serviser { get; set; }
+    public string? Napomena { get; set; }
+    public string? PutanjaRacuna { get; set; }
+    public bool JeRegistracija { get; set; }
 }
 
 public class PodsjetnikViewModel
