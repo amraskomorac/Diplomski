@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace Diplomski.Models;
 
@@ -51,6 +52,18 @@ public class Vozilo : IValidatableObject
     [DataType(DataType.Date)]
     [Column("datum_registracije")]
     public DateTime DatumRegistracije { get; set; }
+
+    [DataType(DataType.Date)]
+    [Column("datum_isteka_registracije")]
+    public DateTime? DatumIstekaRegistracije { get; set; }
+
+    [Precision(10, 2)]
+    [Column("cijena_registracije")]
+    public decimal? CijenaRegistracije { get; set; }
+
+    [StringLength(150)]
+    [Column("polica_osiguranja")]
+    public string? PolicaOsiguranja { get; set; }
 
     [Range(0, int.MaxValue, ErrorMessage = "Kilometraža ne može biti negativna.")]
     [Column("kilometraza_mali_servis")]

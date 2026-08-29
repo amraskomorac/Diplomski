@@ -4,9 +4,15 @@
 <div class="container py-5" style="max-width: 1000px;">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div><h2 class="mb-1">Pocetna stranica</h2><p class="text-muted mb-0">Pregled vaseg vozila i odrzavanja.</p></div>
-        @if (Model.OdabranoVozilo is not null && Model.Vozila.Count > 1)
+        @if (Model.OdabranoVozilo is not null)
         {
-            <a asp-action="Index" class="btn btn-outline-primary"><i class="bi bi-grid-3x3-gap me-2"></i>Promijeni vozilo</a>
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-controller="Servisi" asp-action="Index" class="btn btn-primary"><i class="bi bi-tools me-2"></i>Servisi</a>
+                @if (Model.Vozila.Count > 1)
+                {
+                    <a asp-action="Index" asp-route-promijeniVozilo="true" class="btn btn-outline-primary"><i class="bi bi-grid-3x3-gap me-2"></i>Promijeni vozilo</a>
+                }
+            </div>
         }
     </div>
     @if (Model.OdabranoVozilo is null)
@@ -38,10 +44,12 @@
     {
         @if (TempData["GreskaKilometraza"] is not null) { <div class="alert alert-danger">@TempData["GreskaKilometraza"]</div> }
         @if (TempData["PorukaKilometraza"] is not null) { <div class="alert alert-success">@TempData["PorukaKilometraza"]</div> }
+        @if (TempData["GreskaRegistracija"] is not null) { <div class="alert alert-danger">@TempData["GreskaRegistracija"]</div> }
+        @if (TempData["PorukaRegistracija"] is not null) { <div class="alert alert-success">@TempData["PorukaRegistracija"]</div> }
         <div class="card shadow-sm border-0 mb-4"><div class="card-body p-4 d-flex flex-wrap justify-content-between align-items-center gap-2"><div><div class="text-muted small mb-1">Dashboard vozila</div><h3 class="mb-0">@Model.OdabranoVozilo.Marka @Model.OdabranoVozilo.Model</h3></div><span class="badge text-bg-light border fs-6">@Model.OdabranoVozilo.Registracija</span></div></div>
         <div class="row g-3 mb-4">
             <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Trenutna kilometraza</div><div class="fs-4 fw-semibold mb-3">@Model.OdabranoVozilo.TrenutnaKilometraza.ToString("N0") km</div><button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#kilometrazaModal">Azuriraj</button></div></div></div>
-            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Registracija</div><div class="fs-5 fw-semibold">Istice za @Model.DaniDoIstekaRegistracije dana<br /><small>@Model.DatumIstekaRegistracije.ToString("dd.MM.yyyy.")</small></div></div></div></div>
+            <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Registracija</div><div class="fs-5 fw-semibold">Istice za @Model.DaniDoIstekaRegistracije dana<br /><small>@Model.DatumIstekaRegistracije.ToString("dd.MM.yyyy.")</small></div><button type="button" class="btn btn-outline-primary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#registracijaModal">Detalji</button></div></div></div>
             <div class="col-md-6 col-lg-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Ukupni troskovi ove godine</div><div class="fs-4 fw-semibold">@Model.UkupniTrosakOveGodine.ToString("N2") KM</div></div></div></div>
             <div class="col-md-6"><div class="card h-100 shadow-sm border-0"><div class="card-body"><h5>Mali servis</h5><div class="text-muted">Posljednji mali servis</div><div class="fw-semibold mb-3">@Model.PosljednjiMaliServis</div><div class="text-muted">Sljedeci mali servis</div><div class="fs-5 fw-semibold">@Model.SljedeciMaliServis</div></div></div></div>
             <div class="col-md-6"><div class="card h-100 shadow-sm border-0"><div class="card-body"><h5>Veliki servis</h5><div class="text-muted">Posljednji veliki servis</div><div class="fw-semibold mb-3">@Model.PosljednjiVelikiServis</div><div class="text-muted">Sljedeci veliki servis</div><div class="fs-5 fw-semibold">@Model.SljedeciVelikiServis</div></div></div></div>
@@ -66,59 +74,13 @@
                 <p class="mb-0 text-success"><i class="bi bi-check-circle me-2"></i>Nema podsjetnika koji zahtijevaju paznju.</p>
             }
         </div></section>
-        <section class="historija-kartica mt-4"><div class="p-4 border-bottom">
-            <h4 class="mb-1">Historija odrzavanja</h4><p class="text-muted mb-0">Kliknite na servis za pregled svih evidentiranih detalja.</p>
-            @if (Model.HistorijaOdrzavanja.Any())
-            {
-                var kategorije = Model.HistorijaOdrzavanja.Select(h => h.Naziv).Distinct().OrderBy(n => n).ToList();
-                <div class="historija-filteri mt-3" aria-label="Filtriranje historije odrzavanja">
-                    <span class="historija-filter-naslov">Kategorija</span>
-                    <div class="d-flex flex-wrap gap-2">
-                        <button type="button" class="historija-filter aktivan" data-service-filter="svi">Svi</button>
-                        @foreach (var kategorija in kategorije)
-                        {
-                            <button type="button" class="historija-filter" data-service-filter="@kategorija">@kategorija</button>
-                        }
-                    </div>
-                </div>
-            }
-        </div>
-        @if (Model.HistorijaOdrzavanja.Any())
-        {
-            <div class="historija-lista">
-                @foreach (var stavka in Model.HistorijaOdrzavanja)
-                {
-                    var modalId = $"servisDetalji{stavka.ServisId}";
-                    if (stavka.JeRegistracija)
-                    {
-                        <article class="historija-stavka historija-stavka-neaktivna" data-service-category="@stavka.Naziv"><span class="historija-kategorija">Registracija</span><div><h5 class="mb-1">Registracija vozila</h5><span class="text-muted">@stavka.Datum.ToString("dd.MM.yyyy.")</span></div></article>
-                    }
-                    else
-                    {
-                        <button type="button" class="historija-stavka text-start" data-service-category="@stavka.Naziv" data-bs-toggle="modal" data-bs-target="#@modalId">
-                            <span class="historija-kategorija">@stavka.Naziv</span>
-                            <div class="historija-sazetak"><div><h5 class="mb-1">@stavka.Naziv</h5><span class="text-muted">@stavka.Datum.ToString("dd.MM.yyyy.") · @stavka.Kilometraza?.ToString("N0") km</span></div><strong>@stavka.Cijena?.ToString("N2") KM</strong></div>
-                        </button>
-                        <div class="modal fade" id="@modalId" tabindex="-1" aria-labelledby="@(modalId)Label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable modal-dialog-centered"><div class="modal-content servis-detalji-modal">
-                            <div class="modal-header border-0 pb-0"><div><span class="historija-kategorija">@stavka.Naziv</span><h5 class="modal-title mt-2" id="@(modalId)Label">@stavka.Naziv</h5></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvori"></button></div>
-                            <div class="modal-body pt-3"><div class="servis-glavni-podaci"><div><span>Datum</span><strong>@stavka.Datum.ToString("dd. MMMM yyyy.", new System.Globalization.CultureInfo("bs-BA"))</strong></div><div><span>Kilometraza</span><strong>@stavka.Kilometraza?.ToString("N0") km</strong></div><div><span>Cijena</span><strong>@stavka.Cijena?.ToString("N2") KM</strong></div></div>
-                                @if (!string.IsNullOrWhiteSpace(stavka.Napomena)) { <section class="servis-detalj-sekcija"><h6>Obavljeni radovi i napomena</h6><p class="mb-0">@stavka.Napomena</p></section> }
-                                <section class="servis-detalj-sekcija"><h6>Servis</h6><p class="mb-0">@stavka.Serviser</p></section>
-                            </div>
-                            <div class="modal-footer border-0 pt-0 justify-content-between"><div>@if (!string.IsNullOrWhiteSpace(stavka.PutanjaRacuna)) { <a href="@stavka.PutanjaRacuna" target="_blank" class="btn btn-outline-primary"><i class="bi bi-paperclip me-1"></i>Racun</a> }</div><a asp-controller="Servisi" asp-action="Uredi" asp-route-id="@stavka.ServisId" class="btn btn-primary"><i class="bi bi-pencil-square me-1"></i>Uredi</a></div>
-                        </div></div></div>
-                    }
-                }
-            </div>
-        }
-        else { <p class="m-4 text-muted">Jos nema evidentirane historije odrzavanja.</p> }
-        </section>
     }
 </div>
 
 @if (Model.OdabranoVozilo is not null)
 {
     <div class="modal fade" id="kilometrazaModal" tabindex="-1" aria-labelledby="kilometrazaModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><form asp-action="AzurirajKilometrazu" method="post" class="modal-content"><div class="modal-header"><h5 class="modal-title" id="kilometrazaModalLabel">Azuriraj kilometrazu</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvori"></button></div><div class="modal-body"><input type="hidden" name="voziloId" value="@Model.OdabranoVozilo.Id" /><label for="kilometraza" class="form-label">Nova kilometraza</label><div class="input-group"><input id="kilometraza" name="kilometraza" type="number" min="@Model.OdabranoVozilo.TrenutnaKilometraza" value="@Model.OdabranoVozilo.TrenutnaKilometraza" class="form-control" required /><span class="input-group-text">km</span></div><div class="form-text">Nova kilometraza ne moze biti manja od @Model.OdabranoVozilo.TrenutnaKilometraza.ToString("N0") km.</div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Odustani</button><button type="submit" class="btn btn-primary">Sacuvaj</button></div></form></div></div>
+    <div class="modal fade" id="registracijaModal" tabindex="-1" aria-labelledby="registracijaModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-dialog-scrollable"><form asp-action="AzurirajRegistraciju" method="post" class="modal-content"><div class="modal-header"><h5 class="modal-title" id="registracijaModalLabel">Detalji registracije</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvori"></button></div><div class="modal-body"><input type="hidden" name="VoziloId" value="@Model.OdabranoVozilo.Id" /><div class="mb-3"><label for="datumRegistracije" class="form-label">Datum registracije</label><input id="datumRegistracije" name="DatumRegistracije" type="date" value="@Model.OdabranoVozilo.DatumRegistracije.ToString("yyyy-MM-dd")" class="form-control" required /></div><div class="mb-3"><label for="datumIstekaRegistracije" class="form-label">Datum isteka</label><input id="datumIstekaRegistracije" name="DatumIstekaRegistracije" type="date" value="@Model.DatumIstekaRegistracije.ToString("yyyy-MM-dd")" class="form-control" required /></div><div class="mb-3"><label for="cijenaRegistracije" class="form-label">Cijena (KM)</label><input id="cijenaRegistracije" name="Cijena" type="number" min="0.01" step="0.01" value="@Model.OdabranoVozilo.CijenaRegistracije?.ToString(System.Globalization.CultureInfo.InvariantCulture)" class="form-control" required /></div><div><label for="policaOsiguranja" class="form-label">Polica osiguranja</label><input id="policaOsiguranja" name="PolicaOsiguranja" value="@Model.OdabranoVozilo.PolicaOsiguranja" maxlength="150" class="form-control" required /></div><hr class="my-4" /><h6>Prethodne registracije</h6>@if (Model.HistorijaRegistracija.Any()) { <div class="table-responsive"><table class="table table-sm align-middle mb-0"><thead><tr><th>Registracija</th><th>Ističe</th><th class="text-end">Cijena</th><th>Polica</th></tr></thead><tbody>@foreach (var registracija in Model.HistorijaRegistracija) { <tr><td>@registracija.DatumRegistracije.ToString("dd.MM.yyyy.")</td><td>@registracija.DatumIstekaRegistracije.ToString("dd.MM.yyyy.")</td><td class="text-end">@(registracija.Cijena?.ToString("N2") ?? "—") KM</td><td>@(string.IsNullOrWhiteSpace(registracija.PolicaOsiguranja) ? "—" : registracija.PolicaOsiguranja)</td></tr> }</tbody></table></div> } else { <p class="text-muted mb-0">Nema evidentiranih prethodnih registracija.</p> }</div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Odustani</button><button type="submit" class="btn btn-primary">Sačuvaj detalje</button></div></form></div></div>
 }
 
 @if (Model.PrikaziObavijesti)
@@ -129,16 +91,4 @@
 @section Scripts {
     @if (Model.PrikaziObavijesti)
     { <script>document.addEventListener('DOMContentLoaded', function () { new bootstrap.Modal(document.getElementById('obavijestiModal')).show(); });</script> }
-    <script>
-        document.querySelectorAll('[data-service-filter]').forEach(function (filter) {
-            filter.addEventListener('click', function () {
-                var kategorija = this.dataset.serviceFilter;
-                document.querySelectorAll('[data-service-filter]').forEach(function (dugme) { dugme.classList.remove('aktivan'); });
-                this.classList.add('aktivan');
-                document.querySelectorAll('[data-service-category]').forEach(function (stavka) {
-                    stavka.hidden = kategorija !== 'svi' && stavka.dataset.serviceCategory !== kategorija;
-                });
-            });
-        });
-    </script>
 }

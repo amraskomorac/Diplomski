@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Globalization;
 using Diplomski.Data;
 using Diplomski.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -15,50 +14,90 @@ public class DashboardController : Controller
 
     public DashboardController(ApplicationDbContext context) => _context = context;
 
-    public async Task<IActionResult> Index(int? voziloId)
+    public async Task<IActionResult> Index(int? voziloId, bool promijeniVozilo = false)
     {
         var korisnikId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var vozila = await _context.Vozila.Where(v => v.KorisnikId == korisnikId)
             .OrderBy(v => v.Marka).ThenBy(v => v.Model).ToListAsync();
-        // Kada korisnik ima vise vozila, najprije treba odabrati ono za koje zeli
-        // vidjeti dashboard. Za jedno vozilo zadrzavamo direktan prikaz dashboarda.
+        const string odabranoVoziloKey = "odabrano_vozilo_id";
+        if (promijeniVozilo)
+            HttpContext.Session.Remove(odabranoVoziloKey);
+
         var odabranoVozilo = voziloId.HasValue
             ? vozila.FirstOrDefault(v => v.Id == voziloId.Value)
-            : vozila.Count == 1 ? vozila.First() : null;
+            : null;
+        if (odabranoVozilo is not null)
+            HttpContext.Session.SetInt32(odabranoVoziloKey, odabranoVozilo.Id);
+        else if (!promijeniVozilo && HttpContext.Session.GetInt32(odabranoVoziloKey) is int sacuvaniVoziloId)
+            odabranoVozilo = vozila.FirstOrDefault(v => v.Id == sacuvaniVoziloId);
+        else if (vozila.Count == 1)
+            odabranoVozilo = vozila.First();
         var model = new DashboardViewModel { Vozila = vozila, OdabranoVozilo = odabranoVozilo };
 
         if (odabranoVozilo is null)
             return View(model);
 
-        model.DatumIstekaRegistracije = odabranoVozilo.DatumRegistracije.Date.AddYears(1);
+        model.DatumIstekaRegistracije = odabranoVozilo.DatumIstekaRegistracije?.Date ?? odabranoVozilo.DatumRegistracije.Date.AddYears(1);
         model.DaniDoIstekaRegistracije = (model.DatumIstekaRegistracije - DateTime.Today).Days;
         var servisi = await _context.Servisi.Where(s => s.KorisnikId == korisnikId && s.VoziloId == odabranoVozilo.Id && s.Datum.Year == DateTime.Today.Year).SumAsync(s => (decimal?)s.Cijena) ?? 0;
         var gorivo = await _context.Goriva.Where(g => g.KorisnikId == korisnikId && g.VoziloId == odabranoVozilo.Id && g.Datum.Year == DateTime.Today.Year).SumAsync(g => (decimal?)g.Cijena) ?? 0;
-        model.UkupniTrosakOveGodine = servisi + gorivo;
-        model.HistorijaOdrzavanja = await _context.Servisi.Where(s => s.KorisnikId == korisnikId && s.VoziloId == odabranoVozilo.Id).OrderByDescending(s => s.Datum).Take(12).Select(s => new StavkaHistorijeOdrzavanja
-        {
-            ServisId = s.Id,
-            Datum = s.Datum,
-            Naziv = s.Tip,
-            Kilometraza = s.Kilometraza,
-            Cijena = s.Cijena,
-            Serviser = s.Serviser,
-            Napomena = s.Napomena,
-            PutanjaRacuna = s.PutanjaRacuna
-        }).ToListAsync();
-        model.HistorijaOdrzavanja.Add(new StavkaHistorijeOdrzavanja { Datum = odabranoVozilo.DatumRegistracije, Naziv = "Registracija", JeRegistracija = true });
-        model.HistorijaOdrzavanja = model.HistorijaOdrzavanja.OrderByDescending(h => h.Datum).ToList();
-        model.PosljednjiMaliServis = PrikaziPosljednjiServis(odabranoVozilo.KilometrazaMaliServis);
-        model.SljedeciMaliServis = PrikaziSljedeciServis(odabranoVozilo.TrenutnaKilometraza, odabranoVozilo.KilometrazaMaliServis, 10_000);
-        model.PosljednjiVelikiServis = PrikaziPosljednjiServis(odabranoVozilo.KilometrazaVelikiServis);
-        model.SljedeciVelikiServis = PrikaziSljedeciServis(odabranoVozilo.TrenutnaKilometraza, odabranoVozilo.KilometrazaVelikiServis, 100_000);
-        DodajPodsjetnike(model, odabranoVozilo);
+        var registracija = odabranoVozilo.DatumRegistracije.Year == DateTime.Today.Year ? odabranoVozilo.CijenaRegistracije ?? 0 : 0;
+        model.UkupniTrosakOveGodine = servisi + gorivo + registracija;
+        model.HistorijaRegistracija = await _context.HistorijaRegistracija
+            .Where(h => h.VoziloId == odabranoVozilo.Id)
+            .OrderByDescending(h => h.DatumRegistracije)
+            .ToListAsync();
+        var posljednjiMaliServis = await ZadnjaKilometrazaServisa(korisnikId, odabranoVozilo.Id, "Mali servis") ?? odabranoVozilo.KilometrazaMaliServis;
+        var posljednjiVelikiServis = await ZadnjaKilometrazaServisa(korisnikId, odabranoVozilo.Id, "Veliki servis") ?? odabranoVozilo.KilometrazaVelikiServis;
+        model.PosljednjiMaliServis = PrikaziPosljednjiServis(posljednjiMaliServis);
+        model.SljedeciMaliServis = PrikaziSljedeciServis(odabranoVozilo.TrenutnaKilometraza, posljednjiMaliServis, 10_000);
+        model.PosljednjiVelikiServis = PrikaziPosljednjiServis(posljednjiVelikiServis);
+        model.SljedeciVelikiServis = PrikaziSljedeciServis(odabranoVozilo.TrenutnaKilometraza, posljednjiVelikiServis, 100_000);
+        await DodajPodsjetnike(model, odabranoVozilo, korisnikId, posljednjiMaliServis, posljednjiVelikiServis);
         const string obavijestiPrikazaneKey = "dashboard_obavijesti_prikazane";
         model.PrikaziObavijesti = model.AktivneObavijesti.Any()
             && HttpContext.Session.GetString(obavijestiPrikazaneKey) is null;
         if (model.PrikaziObavijesti)
             HttpContext.Session.SetString(obavijestiPrikazaneKey, "true");
         return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AzurirajRegistraciju(DetaljiRegistracijeViewModel detalji)
+    {
+        var korisnikId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var vozilo = await _context.Vozila.FirstOrDefaultAsync(v => v.Id == detalji.VoziloId && v.KorisnikId == korisnikId);
+        if (vozilo is null)
+            return NotFound();
+
+        if (!ModelState.IsValid)
+        {
+            TempData["GreskaRegistracija"] = ModelState.Values.SelectMany(v => v.Errors).FirstOrDefault()?.ErrorMessage ?? "Podaci registracije nisu ispravni.";
+            return RedirectToAction(nameof(Index), new { voziloId = detalji.VoziloId });
+        }
+
+        var jeNovaRegistracija = vozilo.DatumRegistracije.Date != detalji.DatumRegistracije.Date
+            || vozilo.DatumIstekaRegistracije?.Date != detalji.DatumIstekaRegistracije.Date;
+        if (jeNovaRegistracija)
+        {
+            _context.HistorijaRegistracija.Add(new HistorijaRegistracije
+            {
+                VoziloId = vozilo.Id,
+                DatumRegistracije = vozilo.DatumRegistracije.Date,
+                DatumIstekaRegistracije = vozilo.DatumIstekaRegistracije?.Date ?? vozilo.DatumRegistracije.Date.AddYears(1),
+                Cijena = vozilo.CijenaRegistracije,
+                PolicaOsiguranja = vozilo.PolicaOsiguranja
+            });
+        }
+
+        vozilo.DatumRegistracije = detalji.DatumRegistracije.Date;
+        vozilo.DatumIstekaRegistracije = detalji.DatumIstekaRegistracije.Date;
+        vozilo.CijenaRegistracije = detalji.Cijena;
+        vozilo.PolicaOsiguranja = detalji.PolicaOsiguranja.Trim();
+        await _context.SaveChangesAsync();
+        TempData["PorukaRegistracija"] = "Detalji registracije su uspješno ažurirani.";
+        return RedirectToAction(nameof(Index), new { voziloId = detalji.VoziloId });
     }
 
     [HttpPost]
@@ -94,20 +133,39 @@ public class DashboardController : Controller
         return preostalo <= 0 ? "Servis je dospio." : $"Za {preostalo:N0} km";
     }
 
-    private static void DodajPodsjetnike(DashboardViewModel model, Vozilo vozilo)
+    private async Task<int?> ZadnjaKilometrazaServisa(int korisnikId, int voziloId, params string[] tipovi)
     {
+        return await _context.Servisi.Where(s => s.KorisnikId == korisnikId && s.VoziloId == voziloId && tipovi.Contains(s.Tip))
+            .OrderByDescending(s => s.Datum).ThenByDescending(s => s.Id).Select(s => (int?)s.Kilometraza).FirstOrDefaultAsync();
+    }
+
+    private async Task DodajPodsjetnike(DashboardViewModel model, Vozilo vozilo, int korisnikId, int maliServis, int velikiServis)
+    {
+        var ulje = await ZadnjaKilometrazaServisa(korisnikId, vozilo.Id, "Mali servis", "Zamjena ulja") ?? maliServis;
+        var filteri = await ZadnjaKilometrazaServisa(korisnikId, vozilo.Id, "Mali servis", "Filter ulja", "Filter zraka", "Filter kabine", "Filter goriva") ?? maliServis;
+        var remen = await ZadnjaKilometrazaServisa(korisnikId, vozilo.Id, "Veliki servis", "Zupčasti remen") ?? velikiServis;
+        var gume = await ZadnjaKilometrazaServisa(korisnikId, vozilo.Id, "Gume");
         var podsjetnici = new List<PodsjetnikViewModel>
         {
-            KreirajKilometarskiPodsjetnik("Motorno ulje", "bi-droplet", vozilo.KilometrazaMaliServis, vozilo.TrenutnaKilometraza, 10_000),
-            KreirajKilometarskiPodsjetnik("Filteri", "bi-funnel", vozilo.KilometrazaMaliServis, vozilo.TrenutnaKilometraza, 10_000),
-            KreirajKilometarskiPodsjetnik("Zupcasti remen", "bi-gear", vozilo.KilometrazaVelikiServis, vozilo.TrenutnaKilometraza, 100_000),
-            KreirajNepodeseniPodsjetnik("Gume", "bi-circle", "Dodajte datum ili kilometrazu zamjene guma u servisima."),
+            KreirajKilometarskiPodsjetnik("Motorno ulje", "bi-droplet", ulje, vozilo.TrenutnaKilometraza, 10_000),
+            KreirajKilometarskiPodsjetnik("Filteri", "bi-funnel", filteri, vozilo.TrenutnaKilometraza, 10_000),
+            KreirajKilometarskiPodsjetnik("Zupcasti remen", "bi-gear", remen, vozilo.TrenutnaKilometraza, 100_000),
+            KreirajKilometarskiPodsjetnik("Gume", "bi-circle", gume ?? 0, vozilo.TrenutnaKilometraza, 50_000),
             KreirajDatumskiPodsjetnik("Registracija", "bi-card-checklist", model.DatumIstekaRegistracije, model.DaniDoIstekaRegistracije),
-            KreirajNepodeseniPodsjetnik("Osiguranje", "bi-shield-check", "Dodajte datum isteka osiguranja za automatsko pracenje.")
+            KreirajOsiguranjePodsjetnik(model.DatumIstekaRegistracije, model.DaniDoIstekaRegistracije, vozilo.PolicaOsiguranja)
         };
         model.AktivneObavijesti = podsjetnici.Where(p => p.JeHitno || p.JeUskoro).ToList();
         model.Podsjetnici = model.AktivneObavijesti;
         model.Upozorenja = model.AktivneObavijesti.Select(p => $"{p.Naziv}: {p.Status}").ToList();
+    }
+
+    private static PodsjetnikViewModel KreirajOsiguranjePodsjetnik(DateTime datumIsteka, int dana, string? polica)
+    {
+        if (string.IsNullOrWhiteSpace(polica))
+            return KreirajNepodeseniPodsjetnik("Osiguranje", "bi-shield-check", "Dodajte policu osiguranja u detaljima registracije.");
+        var podsjetnik = KreirajDatumskiPodsjetnik("Osiguranje", "bi-shield-check", datumIsteka, dana);
+        podsjetnik.ZadnjiPut = $"Polica: {polica}";
+        return podsjetnik;
     }
 
     private static PodsjetnikViewModel KreirajKilometarskiPodsjetnik(string naziv, string ikona, int zadnja, int trenutno, int interval)

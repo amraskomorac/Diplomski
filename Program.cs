@@ -31,12 +31,6 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await db.Database.ExecuteSqlRawAsync("CREATE TABLE IF NOT EXISTS goriva (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, vozilo_id INT NOT NULL, datum DATETIME(6) NOT NULL, litara DECIMAL(10,2) NOT NULL, cijena DECIMAL(10,2) NOT NULL, kilometraza INT NOT NULL, korisnik_id INT NOT NULL, INDEX IX_goriva_vozilo_id (vozilo_id), INDEX IX_goriva_korisnik_id (korisnik_id), CONSTRAINT FK_goriva_vozila FOREIGN KEY (vozilo_id) REFERENCES vozila(id) ON DELETE CASCADE, CONSTRAINT FK_goriva_korisnici FOREIGN KEY (korisnik_id) REFERENCES korisnici(id) ON DELETE CASCADE)");
-}
-
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();

@@ -18,7 +18,15 @@ public class GorivoController : Controller
     {
         var korisnikId = TrenutniKorisnikId();
         var vozila = await _context.Vozila.Where(v => v.KorisnikId == korisnikId).OrderBy(v => v.Marka).ToListAsync();
-        var odabrano = voziloId ?? vozila.FirstOrDefault()?.Id;
+        var odabrano = voziloId.HasValue && vozila.Any(v => v.Id == voziloId.Value)
+            ? voziloId
+            : HttpContext.Session.GetInt32("odabrano_vozilo_id");
+        if (odabrano.HasValue && !vozila.Any(v => v.Id == odabrano.Value))
+            odabrano = null;
+        if (!odabrano.HasValue && vozila.Count == 1)
+            odabrano = vozila[0].Id;
+        if (voziloId.HasValue && odabrano.HasValue)
+            HttpContext.Session.SetInt32("odabrano_vozilo_id", odabrano.Value);
         var zapisi = odabrano.HasValue ? await _context.Goriva.Where(g => g.KorisnikId == korisnikId && g.VoziloId == odabrano.Value).OrderByDescending(g => g.Kilometraza).ToListAsync() : [];
         var poredani = zapisi.OrderBy(g => g.Kilometraza).ToList();
         var predjeniKm = poredani.Zip(poredani.Skip(1), (a, b) => Math.Max(0, b.Kilometraza - a.Kilometraza)).Sum();
@@ -28,19 +36,23 @@ public class GorivoController : Controller
 
     public async Task<IActionResult> Dodaj()
     {
-        await UcitajVozila();
-        return View(new Gorivo { Datum = DateTime.Today });
+        var odabranoVozilo = await OdabranoVozilo();
+        await UcitajVozila(odabranoVozilo);
+        return View(new Gorivo { Datum = DateTime.Today, VoziloId = odabranoVozilo?.Id ?? 0 });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Dodaj(Gorivo gorivo)
     {
         var korisnikId = TrenutniKorisnikId();
+        var odabranoVozilo = await OdabranoVozilo();
+        if (odabranoVozilo is not null)
+            gorivo.VoziloId = odabranoVozilo.Id;
         var vozilo = await _context.Vozila.FirstOrDefaultAsync(v => v.Id == gorivo.VoziloId && v.KorisnikId == korisnikId);
         if (vozilo is null) ModelState.AddModelError(nameof(Gorivo.VoziloId), "Odaberite svoje vozilo.");
         else if (gorivo.Kilometraza < vozilo.TrenutnaKilometraza) ModelState.AddModelError(nameof(Gorivo.Kilometraza), $"Kilometraza ne moze biti manja od trenutne kilometraze vozila ({vozilo.TrenutnaKilometraza:N0} km).");
         if (gorivo.Datum.Date > DateTime.Today) ModelState.AddModelError(nameof(Gorivo.Datum), "Datum ne moze biti u buducnosti.");
-        if (!ModelState.IsValid) { await UcitajVozila(); return View(gorivo); }
+        if (!ModelState.IsValid) { await UcitajVozila(odabranoVozilo); return View(gorivo); }
         gorivo.KorisnikId = korisnikId; _context.Goriva.Add(gorivo);
         if (vozilo is not null && gorivo.Kilometraza > vozilo.TrenutnaKilometraza) vozilo.TrenutnaKilometraza = gorivo.Kilometraza;
         await _context.SaveChangesAsync();
@@ -80,7 +92,16 @@ public class GorivoController : Controller
         var voziloId = gorivo.VoziloId; _context.Goriva.Remove(gorivo); await _context.SaveChangesAsync();
         TempData["Poruka"] = "Unos goriva je obrisan."; return RedirectToAction(nameof(Index), new { voziloId });
     }
-    private async Task UcitajVozila() => ViewBag.Vozila = await _context.Vozila.Where(v => v.KorisnikId == TrenutniKorisnikId()).Select(v => new SelectListItem { Value = v.Id.ToString(), Text = $"{v.Marka} {v.Model} ({v.Registracija})" }).ToListAsync();
+    private async Task UcitajVozila(Vozilo? odabranoVozilo = null)
+    {
+        ViewBag.Vozila = await _context.Vozila.Where(v => v.KorisnikId == TrenutniKorisnikId()).Select(v => new SelectListItem { Value = v.Id.ToString(), Text = $"{v.Marka} {v.Model} ({v.Registracija})" }).ToListAsync();
+        ViewBag.OdabranoVoziloNaziv = odabranoVozilo is null ? null : $"{odabranoVozilo.Marka} {odabranoVozilo.Model} ({odabranoVozilo.Registracija})";
+    }
+    private async Task<Vozilo?> OdabranoVozilo()
+    {
+        var voziloId = HttpContext.Session.GetInt32("odabrano_vozilo_id");
+        return voziloId.HasValue ? await _context.Vozila.FirstOrDefaultAsync(v => v.Id == voziloId.Value && v.KorisnikId == TrenutniKorisnikId()) : null;
+    }
     private Task<Gorivo?> PronadjiGorivo(int id) => _context.Goriva.FirstOrDefaultAsync(g => g.Id == id && g.KorisnikId == TrenutniKorisnikId());
     private int TrenutniKorisnikId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 }

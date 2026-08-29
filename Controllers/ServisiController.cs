@@ -36,8 +36,9 @@ public class ServisiController : Controller
 
     public async Task<IActionResult> Dodaj()
     {
-        await UcitajVozila();
-        return View(new Servis { Datum = DateTime.Today });
+        var odabranoVozilo = await OdabranoVozilo();
+        await UcitajVozila(odabranoVozilo);
+        return View(new Servis { Datum = DateTime.Today, VoziloId = odabranoVozilo?.Id });
     }
 
     [HttpPost]
@@ -45,12 +46,15 @@ public class ServisiController : Controller
     public async Task<IActionResult> Dodaj(Servis servis, IFormFile? racunDatoteka)
     {
         var korisnikId = TrenutniKorisnikId();
+        var odabranoVozilo = await OdabranoVozilo();
+        if (odabranoVozilo is not null)
+            servis.VoziloId = odabranoVozilo.Id;
         await ValidirajVozilo(servis.VoziloId, servis.Kilometraza, korisnikId);
         ValidirajRacun(racunDatoteka);
 
         if (!ModelState.IsValid)
         {
-            await UcitajVozila();
+            await UcitajVozila(odabranoVozilo);
             return View(servis);
         }
 
@@ -61,6 +65,7 @@ public class ServisiController : Controller
         if (servis.Kilometraza > vozilo.TrenutnaKilometraza)
             vozilo.TrenutnaKilometraza = servis.Kilometraza;
         await _context.SaveChangesAsync();
+        await AzurirajServisneKilometraze(servis.VoziloId!.Value, korisnikId);
 
         TempData["Poruka"] = "Servis je uspješno dodan.";
         return RedirectToAction(nameof(Index));
@@ -85,6 +90,7 @@ public class ServisiController : Controller
             return NotFound();
 
         var korisnikId = TrenutniKorisnikId();
+        var prethodnoVoziloId = postojeciServis.VoziloId;
         await ValidirajVozilo(servis.VoziloId, servis.Kilometraza, korisnikId);
         ValidirajRacun(racunDatoteka);
 
@@ -114,6 +120,9 @@ public class ServisiController : Controller
         if (servis.Kilometraza > vozilo.TrenutnaKilometraza)
             vozilo.TrenutnaKilometraza = servis.Kilometraza;
         await _context.SaveChangesAsync();
+        await AzurirajServisneKilometraze(servis.VoziloId!.Value, korisnikId);
+        if (prethodnoVoziloId.HasValue && prethodnoVoziloId != servis.VoziloId)
+            await AzurirajServisneKilometraze(prethodnoVoziloId.Value, korisnikId);
 
         TempData["Poruka"] = "Servis je uspješno izmijenjen.";
         return RedirectToAction(nameof(Index));
@@ -128,14 +137,18 @@ public class ServisiController : Controller
             return NotFound();
 
         ObrisiRacun(servis.PutanjaRacuna);
+        var voziloId = servis.VoziloId;
+        var korisnikId = TrenutniKorisnikId();
         _context.Servisi.Remove(servis);
         await _context.SaveChangesAsync();
+        if (voziloId.HasValue)
+            await AzurirajServisneKilometraze(voziloId.Value, korisnikId);
 
         TempData["Poruka"] = "Servis je uspješno obrisan.";
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task UcitajVozila()
+    private async Task UcitajVozila(Vozilo? odabranoVozilo = null)
     {
         ViewBag.Vozila = await _context.Vozila
             .Where(v => v.KorisnikId == TrenutniKorisnikId())
@@ -147,6 +160,15 @@ public class ServisiController : Controller
                 Text = $"{v.Marka} {v.Model} ({v.Registracija})"
             })
             .ToListAsync();
+        ViewBag.OdabranoVoziloNaziv = odabranoVozilo is null ? null : $"{odabranoVozilo.Marka} {odabranoVozilo.Model} ({odabranoVozilo.Registracija})";
+    }
+
+    private async Task<Vozilo?> OdabranoVozilo()
+    {
+        var voziloId = HttpContext.Session.GetInt32("odabrano_vozilo_id");
+        return voziloId.HasValue
+            ? await _context.Vozila.FirstOrDefaultAsync(v => v.Id == voziloId.Value && v.KorisnikId == TrenutniKorisnikId())
+            : null;
     }
 
     private async Task ValidirajVozilo(int? voziloId, int kilometrazaServisa, int korisnikId)
@@ -209,6 +231,28 @@ public class ServisiController : Controller
     {
         return await _context.Servisi
             .FirstOrDefaultAsync(s => s.Id == id && s.KorisnikId == TrenutniKorisnikId());
+    }
+
+    private async Task AzurirajServisneKilometraze(int voziloId, int korisnikId)
+    {
+        var vozilo = await _context.Vozila.FirstOrDefaultAsync(v => v.Id == voziloId && v.KorisnikId == korisnikId);
+        if (vozilo is null)
+            return;
+
+        var zadnjiMali = await _context.Servisi
+            .Where(s => s.KorisnikId == korisnikId && s.VoziloId == voziloId && s.Tip == "Mali servis")
+            .OrderByDescending(s => s.Datum).ThenByDescending(s => s.Id)
+            .Select(s => (int?)s.Kilometraza).FirstOrDefaultAsync();
+        var zadnjiVeliki = await _context.Servisi
+            .Where(s => s.KorisnikId == korisnikId && s.VoziloId == voziloId && s.Tip == "Veliki servis")
+            .OrderByDescending(s => s.Datum).ThenByDescending(s => s.Id)
+            .Select(s => (int?)s.Kilometraza).FirstOrDefaultAsync();
+
+        if (zadnjiMali.HasValue)
+            vozilo.KilometrazaMaliServis = zadnjiMali.Value;
+        if (zadnjiVeliki.HasValue)
+            vozilo.KilometrazaVelikiServis = zadnjiVeliki.Value;
+        await _context.SaveChangesAsync();
     }
 
     private int TrenutniKorisnikId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

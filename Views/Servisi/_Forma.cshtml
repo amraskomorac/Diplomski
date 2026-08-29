@@ -13,11 +13,20 @@
 
 <div class="row g-3">
     <div class="col-md-6">
-        <label asp-for="VoziloId" class="form-label">Vozilo</label>
-        <select asp-for="VoziloId" asp-items="ViewBag.Vozila" class="form-select">
-            <option value="">Odaberite vozilo</option>
-        </select>
-        <span asp-validation-for="VoziloId" class="text-danger"></span>
+        @if (ViewBag.OdabranoVoziloNaziv is string nazivVozila)
+        {
+            <label class="form-label">Vozilo</label>
+            <input asp-for="VoziloId" type="hidden" />
+            <div class="form-control bg-light">@nazivVozila</div>
+        }
+        else
+        {
+            <label asp-for="VoziloId" class="form-label">Vozilo</label>
+            <select asp-for="VoziloId" asp-items="ViewBag.Vozila" class="form-select">
+                <option value="">Odaberite vozilo</option>
+            </select>
+            <span asp-validation-for="VoziloId" class="text-danger"></span>
+        }
     </div>
 
     <div class="col-md-6">

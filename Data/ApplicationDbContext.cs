@@ -15,6 +15,7 @@ namespace Diplomski.Data
         public DbSet<Vozilo> Vozila { get; set; }
         public DbSet<Servis> Servisi { get; set; }
         public DbSet<Gorivo> Goriva { get; set; }
+        public DbSet<HistorijaRegistracije> HistorijaRegistracija { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,6 +37,12 @@ namespace Diplomski.Data
                 .HasOne(s => s.Korisnik)
                 .WithMany(k => k.Servisi)
                 .HasForeignKey(s => s.KorisnikId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<HistorijaRegistracije>()
+                .HasOne(h => h.Vozilo)
+                .WithMany()
+                .HasForeignKey(h => h.VoziloId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

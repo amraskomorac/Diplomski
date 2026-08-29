@@ -15,20 +15,7 @@ public class DashboardViewModel
     public List<PodsjetnikViewModel> Podsjetnici { get; set; } = [];
     public List<PodsjetnikViewModel> AktivneObavijesti { get; set; } = [];
     public bool PrikaziObavijesti { get; set; }
-    public List<StavkaHistorijeOdrzavanja> HistorijaOdrzavanja { get; set; } = [];
-}
-
-public class StavkaHistorijeOdrzavanja
-{
-    public int? ServisId { get; set; }
-    public DateTime Datum { get; set; }
-    public string Naziv { get; set; } = "";
-    public int? Kilometraza { get; set; }
-    public decimal? Cijena { get; set; }
-    public string? Serviser { get; set; }
-    public string? Napomena { get; set; }
-    public string? PutanjaRacuna { get; set; }
-    public bool JeRegistracija { get; set; }
+    public List<HistorijaRegistracije> HistorijaRegistracija { get; set; } = [];
 }
 
 public class PodsjetnikViewModel
