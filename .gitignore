@@ -285,6 +285,9 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
+# Front-end biblioteke se učitavaju preko CDN-a, pa lokalne kopije nisu potrebne.
+wwwroot/lib/
+
 # Visual Studio 6 build log
 *.plg
 

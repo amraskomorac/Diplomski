@@ -1,0 +1,19 @@
+@model Diplomski.Models.Vozilo
+@{
+    var danas = DateTime.Today.ToString("yyyy-MM-dd");
+}
+
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="row g-3">
+    <div class="col-md-4"><label asp-for="Marka" class="form-label">Marka</label><input asp-for="Marka" class="form-control" placeholder="Volkswagen" autocomplete="off" /><span asp-validation-for="Marka" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="Model" class="form-label">Model</label><input asp-for="Model" class="form-control" placeholder="Golf" autocomplete="off" /><span asp-validation-for="Model" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="GodinaProizvodnje" class="form-label">Godina proizvodnje</label><input asp-for="GodinaProizvodnje" type="number" min="1886" max="@DateTime.Today.Year" class="form-control" /><span asp-validation-for="GodinaProizvodnje" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="DatumRegistracije" class="form-label">Datum registracije</label><input asp-for="DatumRegistracije" type="date" max="@danas" class="form-control" /><span asp-validation-for="DatumRegistracije" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="Registracija" class="form-label">Registracija</label><input asp-for="Registracija" class="form-control" placeholder="A12-B-345" pattern="[A-Za-z][0-9]{2}-[A-Za-z]-[0-9]{3}" title="Format registracije je A12-B-345." autocomplete="off" /><span asp-validation-for="Registracija" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="KilometrazaMaliServis" class="form-label">Kilometraža zadnjeg malog servisa</label><input asp-for="KilometrazaMaliServis" type="number" min="0" class="form-control" /><span asp-validation-for="KilometrazaMaliServis" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="KilometrazaVelikiServis" class="form-label">Kilometraža zadnjeg velikog servisa</label><input asp-for="KilometrazaVelikiServis" type="number" min="0" class="form-control" /><span asp-validation-for="KilometrazaVelikiServis" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="TrenutnaKilometraza" class="form-label">Trenutna kilometraža</label><input asp-for="TrenutnaKilometraza" type="number" min="0" class="form-control" /><span asp-validation-for="TrenutnaKilometraza" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="TipGoriva" class="form-label">Tip goriva</label><select asp-for="TipGoriva" class="form-select"><option value="">Odaberite gorivo</option><option>Benzin</option><option>Dizel</option><option>Hibrid</option><option>Električno</option><option>Plin</option></select><span asp-validation-for="TipGoriva" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="TipMjenjaca" class="form-label">Tip mjenjača</label><select asp-for="TipMjenjaca" class="form-select"><option value="">Odaberite mjenjač</option><option value="manuelni">Manuelni</option><option value="automatski">Automatski</option><option value="poluautomatski">Poluautomatski</option></select><span asp-validation-for="TipMjenjaca" class="text-danger"></span></div>
+    <div class="col-md-4"><label asp-for="DatumKupovine" class="form-label">Datum kupovine</label><input asp-for="DatumKupovine" type="date" max="@danas" class="form-control" /><span asp-validation-for="DatumKupovine" class="text-danger"></span></div>
+</div>
