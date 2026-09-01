@@ -19,7 +19,12 @@ public class AuthController : Controller
         _context = context;
     }
 
-    public IActionResult Registracija() => View();
+    public IActionResult Registracija()
+    {
+        if (User.Identity?.IsAuthenticated == true)
+            return RedirectToAction("Index", "Dashboard");
+        return View();
+    }
 
     [HttpPost]
     public async Task<IActionResult> Registracija(RegistracijaViewModel model)
@@ -45,7 +50,12 @@ public class AuthController : Controller
         return RedirectToAction("Dodaj", "Vozila");
     }
 
-    public IActionResult Prijava() => View();
+    public IActionResult Prijava()
+    {
+        if (User.Identity?.IsAuthenticated == true)
+            return RedirectToAction("Index", "Dashboard");
+        return View();
+    }
 
     [HttpPost]
     public async Task<IActionResult> Prijava(PrijavaViewModel model)
@@ -65,6 +75,7 @@ public class AuthController : Controller
 
     private async Task PrijaviKorisnika(Korisnik korisnik)
     {
+        HttpContext.Session.SetString("prijavljeni_korisnik_id", korisnik.Id.ToString());
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, korisnik.Id.ToString()),
@@ -131,9 +142,12 @@ public class AuthController : Controller
         return RedirectToAction("Prijava");
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Odjava()
     {
-        await HttpContext.SignOutAsync();
+        HttpContext.Session.Clear();
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToAction("Prijava");
     }
 }

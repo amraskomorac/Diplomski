@@ -92,6 +92,19 @@ CREATE TABLE historija_registracija (
         FOREIGN KEY (vozilo_id) REFERENCES vozila (id) ON DELETE CASCADE
 );
 
+CREATE TABLE dokumenti (
+    id INT NOT NULL AUTO_INCREMENT,
+    tip VARCHAR(50) NOT NULL,
+    naziv_datoteke VARCHAR(255) NOT NULL,
+    putanja VARCHAR(500) NOT NULL,
+    datum_izmjene DATETIME NOT NULL,
+    korisnik_id INT NOT NULL,
+    CONSTRAINT PK_dokumenti PRIMARY KEY (id),
+    CONSTRAINT UQ_dokumenti_korisnik_tip UNIQUE (korisnik_id, tip),
+    CONSTRAINT FK_dokumenti_korisnici_korisnik_id
+        FOREIGN KEY (korisnik_id) REFERENCES korisnici (id) ON DELETE CASCADE
+);
+
 CREATE INDEX IX_tokeni_za_reset_lozinke_korisnik_id
     ON tokeni_za_reset_lozinke (korisnik_id);
 
@@ -112,3 +125,6 @@ CREATE INDEX IX_servisi_korisnik_id
 
 CREATE INDEX IX_historija_registracija_vozilo_id
     ON historija_registracija (vozilo_id);
+
+CREATE INDEX IX_dokumenti_korisnik_id
+    ON dokumenti (korisnik_id);

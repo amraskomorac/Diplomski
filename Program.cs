@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,25 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Auth/Prijava";
         options.AccessDeniedPath = "/Auth/Prijava";
+        options.Cookie.Name = "MojeAuto.Auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.SlidingExpiration = true;
+        options.Events = new CookieAuthenticationEvents
+        {
+            OnValidatePrincipal = async context =>
+            {
+                var korisnikId = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                var aktivniKorisnikId = context.HttpContext.Session.GetString("prijavljeni_korisnik_id");
+
+                if (string.IsNullOrWhiteSpace(korisnikId) || korisnikId != aktivniKorisnikId)
+                {
+                    context.RejectPrincipal();
+                    await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                }
+            }
+        };
     });
 
 builder.Services.AddAuthorization(options =>
@@ -32,6 +52,13 @@ builder.Services.AddAuthorization(options =>
 var app = builder.Build();
 
 app.UseStaticFiles();
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+    context.Response.Headers.Pragma = "no-cache";
+    context.Response.Headers.Expires = "0";
+    await next();
+});
 app.UseRouting();
 app.UseSession();
 

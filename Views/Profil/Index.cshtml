@@ -42,6 +42,18 @@
                 </div>
             </div>
 
+            <div class="profil-tema border-top pt-4 mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <h6 class="mb-1">Izgled aplikacije</h6>
+                        <p class="text-muted small mb-0">Odaberite svijetli ili tamni način rada.</p>
+                    </div>
+                    <button type="button" id="temaDugme" class="btn btn-outline-primary" aria-pressed="false">
+                        <i class="bi bi-moon-stars me-1"></i><span>Uključi tamni način rada</span>
+                    </button>
+                </div>
+            </div>
+
             <div class="d-flex flex-column flex-sm-row gap-2 justify-content-between align-items-sm-center border-top pt-4">
                 <a asp-action="PromjenaLozinke" class="btn btn-outline-primary">
                     <i class="bi bi-shield-lock me-1"></i> Promijeni lozinku
@@ -53,3 +65,25 @@
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dugme = document.getElementById('temaDugme');
+            const azurirajDugme = function () {
+                const tamniRezim = document.documentElement.classList.contains('tamni-rezim');
+                dugme.setAttribute('aria-pressed', tamniRezim);
+                dugme.innerHTML = tamniRezim
+                    ? '<i class="bi bi-sun me-1"></i><span>Uključi svijetli način rada</span>'
+                    : '<i class="bi bi-moon-stars me-1"></i><span>Uključi tamni način rada</span>';
+            };
+
+            azurirajDugme();
+            dugme.addEventListener('click', function () {
+                const tamniRezim = document.documentElement.classList.toggle('tamni-rezim');
+                localStorage.setItem('tema-prikaza', tamniRezim ? 'tamna' : 'svijetla');
+                azurirajDugme();
+            });
+        });
+    </script>
+}

@@ -16,6 +16,7 @@ public class DashboardViewModel
     public List<PodsjetnikViewModel> AktivneObavijesti { get; set; } = [];
     public bool PrikaziObavijesti { get; set; }
     public List<HistorijaRegistracije> HistorijaRegistracija { get; set; } = [];
+    public List<Dokument> Dokumenti { get; set; } = [];
 }
 
 public class PodsjetnikViewModel

@@ -4,17 +4,20 @@
 <div class="container py-5" style="max-width: 1000px;">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div><h2 class="mb-1">Pocetna stranica</h2><p class="text-muted mb-0">Pregled vaseg vozila i odrzavanja.</p></div>
-        @if (Model.OdabranoVozilo is not null)
-        {
-            <div class="d-flex flex-wrap gap-2">
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#dokumentiModal">Dokumenti</button>
+            @if (Model.OdabranoVozilo is not null)
+            {
                 <a asp-controller="Servisi" asp-action="Index" class="btn btn-primary"><i class="bi bi-tools me-2"></i>Servisi</a>
                 @if (Model.Vozila.Count > 1)
                 {
                     <a asp-action="Index" asp-route-promijeniVozilo="true" class="btn btn-outline-primary"><i class="bi bi-grid-3x3-gap me-2"></i>Promijeni vozilo</a>
                 }
-            </div>
-        }
+            }
+        </div>
     </div>
+    @if (TempData["Poruka"] is not null) { <div class="alert alert-success">@TempData["Poruka"]</div> }
+    @if (TempData["Greska"] is not null) { <div class="alert alert-danger">@TempData["Greska"]</div> }
     @if (Model.OdabranoVozilo is null)
     {
         @if (!Model.Vozila.Any())
@@ -77,6 +80,64 @@
     }
 </div>
 
+@{
+    var tipoviDokumenata = new[] { "Saobraćajna", "Osiguranje", "Račun", "Servisna knjižica" };
+    var povratakNaDashboard = Url.Action("Index", "Dashboard", new { voziloId = Model.OdabranoVozilo?.Id });
+}
+<div class="modal fade" id="dokumentiModal" tabindex="-1" aria-labelledby="dokumentiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header">
+                <div><h5 class="modal-title" id="dokumentiModalLabel">Dokumenti</h5><p class="text-muted small mb-0">Uploadujte ili zamijenite svoje dokumente.</p></div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvori"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    @foreach (var tip in tipoviDokumenata)
+                    {
+                        var dokument = Model.Dokumenti.FirstOrDefault(d => d.Tip == tip);
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 h-100 dokument-kartica">
+                                <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                                    <div>
+                                        <h6 class="mb-1">@tip</h6>
+                                        @if (dokument is null)
+                                        {
+                                            <span class="text-muted small">Dokument nije dodan</span>
+                                        }
+                                        else
+                                        {
+                                            <a href="@dokument.Putanja" target="_blank" class="small text-decoration-none">@dokument.NazivDatoteke</a>
+                                            <div class="text-muted small mt-1">Izmijenjen: @dokument.DatumIzmjene.ToLocalTime().ToString("dd.MM.yyyy.")</div>
+                                        }
+                                    </div>
+                                    @if (dokument is not null)
+                                    {
+                                        <form asp-controller="Dokumenti" asp-action="Obrisi" asp-route-id="@dokument.Id" method="post">
+                                            <input type="hidden" name="povratak" value="@povratakNaDashboard" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Ukloni dokument" onclick="return confirm('Da li želite ukloniti ovaj dokument?');">Ukloni</button>
+                                        </form>
+                                    }
+                                </div>
+                                <form asp-controller="Dokumenti" asp-action="Sacuvaj" method="post" enctype="multipart/form-data">
+                                    <input type="hidden" name="tip" value="@tip" />
+                                    <input type="hidden" name="povratak" value="@povratakNaDashboard" />
+                                    <div class="input-group input-group-sm">
+                                        <input type="file" name="datoteka" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required />
+                                        <button type="submit" class="btn btn-primary">@(dokument is null ? "Upload" : "Zamijeni")</button>
+                                    </div>
+                                    <div class="form-text">JPG, PNG ili PDF, do 5 MB.</div>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Zatvori</button></div>
+        </div>
+    </div>
+</div>
+
 @if (Model.OdabranoVozilo is not null)
 {
     <div class="modal fade" id="kilometrazaModal" tabindex="-1" aria-labelledby="kilometrazaModalLabel" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><form asp-action="AzurirajKilometrazu" method="post" class="modal-content"><div class="modal-header"><h5 class="modal-title" id="kilometrazaModalLabel">Azuriraj kilometrazu</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvori"></button></div><div class="modal-body"><input type="hidden" name="voziloId" value="@Model.OdabranoVozilo.Id" /><label for="kilometraza" class="form-label">Nova kilometraza</label><div class="input-group"><input id="kilometraza" name="kilometraza" type="number" min="@Model.OdabranoVozilo.TrenutnaKilometraza" value="@Model.OdabranoVozilo.TrenutnaKilometraza" class="form-control" required /><span class="input-group-text">km</span></div><div class="form-text">Nova kilometraza ne moze biti manja od @Model.OdabranoVozilo.TrenutnaKilometraza.ToString("N0") km.</div></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Odustani</button><button type="submit" class="btn btn-primary">Sacuvaj</button></div></form></div></div>
@@ -91,4 +152,6 @@
 @section Scripts {
     @if (Model.PrikaziObavijesti)
     { <script>document.addEventListener('DOMContentLoaded', function () { new bootstrap.Modal(document.getElementById('obavijestiModal')).show(); });</script> }
+    @if (TempData["PrikaziDokumente"] is not null)
+    { <script>document.addEventListener('DOMContentLoaded', function () { new bootstrap.Modal(document.getElementById('dokumentiModal')).show(); });</script> }
 }

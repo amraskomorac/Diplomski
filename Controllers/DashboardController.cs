@@ -32,7 +32,11 @@ public class DashboardController : Controller
             odabranoVozilo = vozila.FirstOrDefault(v => v.Id == sacuvaniVoziloId);
         else if (vozila.Count == 1)
             odabranoVozilo = vozila.First();
-        var model = new DashboardViewModel { Vozila = vozila, OdabranoVozilo = odabranoVozilo };
+        var dokumenti = await _context.Dokumenti
+            .Where(d => d.KorisnikId == korisnikId)
+            .OrderBy(d => d.Tip)
+            .ToListAsync();
+        var model = new DashboardViewModel { Vozila = vozila, OdabranoVozilo = odabranoVozilo, Dokumenti = dokumenti };
 
         if (odabranoVozilo is null)
             return View(model);
