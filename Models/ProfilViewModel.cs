@@ -6,5 +6,6 @@ namespace Diplomski.Models
     {
         public string PunoIme { get; set; } = "";
         public string Email { get; set; } = "";
+        public bool UrediProfil { get; set; }
     }
 }

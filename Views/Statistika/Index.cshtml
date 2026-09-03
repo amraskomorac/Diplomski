@@ -1,0 +1,44 @@
+@model Diplomski.Models.StatistikaViewModel
+@using System.Text.Json
+@{ ViewData["Title"] = "Statistika"; }
+
+<div class="container py-5" style="max-width: 1100px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div><h2 class="mb-1">Statistika</h2><p class="text-muted mb-0">Troškovi i procjene održavanja vašeg vozila.</p></div>
+        @if (Model.Vozila.Any())
+        { <form method="get"><select name="voziloId" class="form-select" onchange="this.form.submit()" aria-label="Odaberi vozilo"><option value="">Odaberite vozilo</option>@foreach (var vozilo in Model.Vozila) { <option value="@vozilo.Id" selected="@(Model.OdabranoVozilo?.Id == vozilo.Id)">@vozilo.Marka @vozilo.Model (@vozilo.Registracija)</option> }</select></form> }
+    </div>
+    @if (Model.OdabranoVozilo is null)
+    { <div class="alert alert-light border">@(!Model.Vozila.Any() ? "Prvo dodajte vozilo kako biste vidjeli statistiku." : "Odaberite vozilo za prikaz statistike.")</div> }
+    else
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-md-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Prosječno mjesečno</div><div class="fs-3 fw-semibold">@(Model.ProsjecnaMjesecnaKilometraza?.ToString("N0") ?? "—") km</div><small class="text-muted">Izračun iz evidentiranih kilometraža</small></div></div></div>
+            <div class="col-md-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Sljedeći mali servis</div><div class="fs-4 fw-semibold">@(Model.MjeseciDoMalogServisa.HasValue ? Model.MjeseciDoMalogServisa == 0 ? "Sada je dospio" : $"za oko {Model.MjeseciDoMalogServisa} mj." : "Nema dovoljno podataka")</div><small class="text-muted">Interval: 10.000 km</small></div></div></div>
+            <div class="col-md-4"><div class="card h-100 shadow-sm border-0"><div class="card-body"><div class="text-muted">Sljedeći veliki servis</div><div class="fs-4 fw-semibold">@(Model.MjeseciDoVelikogServisa.HasValue ? Model.MjeseciDoVelikogServisa == 0 ? "Sada je dospio" : $"za oko {Model.MjeseciDoVelikogServisa} mj." : "Nema dovoljno podataka")</div><small class="text-muted">Interval: 100.000 km</small></div></div></div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-8"><section class="card shadow-sm border-0 h-100"><div class="card-body p-4"><h5>Troškovi servisa po mjesecima</h5><p class="text-muted small">Posljednjih 12 mjeseci</p><div class="statistika-graf"><canvas id="mjesecniGraf"></canvas></div></div></section></div>
+            <div class="col-lg-4"><section class="card shadow-sm border-0 h-100"><div class="card-body p-4"><h5>Najskuplji servis</h5>@if (Model.NajskupljiServis is not null) { <div class="najskuplji-iznos">@Model.NajskupljiServis.Cijena.ToString("N2") KM</div><div class="fw-semibold">@Model.NajskupljiServis.Tip</div><div class="text-muted small">@Model.NajskupljiServis.Datum.ToString("dd.MM.yyyy.") · @Model.NajskupljiServis.Serviser</div> } else { <p class="text-muted mb-0">Nema evidentiranih servisa.</p> }</div></section></div>
+            <div class="col-lg-6"><section class="card shadow-sm border-0"><div class="card-body p-4"><h5>Troškovi po tipu servisa</h5><div class="statistika-graf"><canvas id="tipGraf"></canvas></div></div></section></div>
+            <div class="col-lg-6"><section class="card shadow-sm border-0"><div class="card-body p-4"><h5>Broj servisa godišnje</h5><div class="statistika-graf"><canvas id="godisnjiGraf"></canvas></div></div></section></div>
+        </div>
+    }
+</div>
+
+@if (Model.OdabranoVozilo is not null)
+{
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script>
+    const mjeseci = @Html.Raw(JsonSerializer.Serialize(Model.Mjeseci));
+    const troskovi = @Html.Raw(JsonSerializer.Serialize(Model.TroskoviPoMjesecima));
+    const tipovi = @Html.Raw(JsonSerializer.Serialize(Model.TipoviServisa));
+    const troskoviTip = @Html.Raw(JsonSerializer.Serialize(Model.TroskoviPoTipu));
+    const godine = @Html.Raw(JsonSerializer.Serialize(Model.Godine));
+    const brojServisa = @Html.Raw(JsonSerializer.Serialize(Model.BrojServisaPoGodini));
+    const boje = ['#146c7b','#3c8d9b','#79b8c2','#b6dfe4','#0f5360','#6b549d','#ad5e20','#376c3a'];
+    new Chart(document.getElementById('mjesecniGraf'), { type: 'bar', data: { labels: mjeseci, datasets: [{ label: 'Trošak (KM)', data: troskovi, backgroundColor: '#146c7b', borderRadius: 5 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+    new Chart(document.getElementById('tipGraf'), { type: 'doughnut', data: { labels: tipovi, datasets: [{ data: troskoviTip, backgroundColor: boje }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+    new Chart(document.getElementById('godisnjiGraf'), { type: 'line', data: { labels: godine, datasets: [{ label: 'Broj servisa', data: brojServisa, borderColor: '#146c7b', backgroundColor: 'rgba(20,108,123,.15)', fill: true, tension: .35, pointBackgroundColor: '#146c7b' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+</script>
+}

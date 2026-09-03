@@ -84,6 +84,10 @@ body {
 .timeline-stavka { position: relative; padding-bottom: 1.25rem; }
 .timeline-stavka::before { content: ""; position: absolute; left: -1.78rem; top: .35rem; width: .7rem; height: .7rem; border-radius: 50%; background: var(--autocare-glavna); }
 .timeline-datum { color: #6c757d; font-size: .85rem; margin-bottom: .25rem; text-transform: capitalize; }
+.statistika-graf { position: relative; height: 280px; }
+.najskuplji-iznos { margin: 1.4rem 0 .35rem; color: var(--autocare-tamna); font-size: 2rem; font-weight: 700; }
+.vozilo-odabrano { background-color: #f8f9fa; }
+.profil-polje-samo-za-citanje { background-color: #f8f9fa; cursor: default; }
 
 
 .vozila-izbor { max-width: 860px; margin: 2rem auto 0; }
@@ -122,6 +126,8 @@ html.tamni-rezim .input-group-text {
   border-color: #49616a;
   color: #edf5f6;
 }
+html.tamni-rezim .vozilo-odabrano,
+html.tamni-rezim .profil-polje-samo-za-citanje { background-color: #24383f; color: #edf5f6; border-color: #49616a; }
 
 html.tamni-rezim .form-control::placeholder { color: #a8bbc1; }
 html.tamni-rezim .border,
@@ -131,3 +137,4 @@ html.tamni-rezim .table { --bs-table-bg: #1d2d33; --bs-table-color: #e7eff1; --b
 html.tamni-rezim .btn-outline-secondary { color: #d3e0e4; border-color: #789097; }
 html.tamni-rezim .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
 html.tamni-rezim .vozilo-izbor-kartica:hover { color: #fff; background-color: #29434b; }
+html.tamni-rezim .najskuplji-iznos { color: #82d4df; }

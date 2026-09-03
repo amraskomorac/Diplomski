@@ -17,7 +17,7 @@ public class ProfilController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(bool uredi = false)
     {
         var id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var korisnik = await _context.Korisnici.FindAsync(id);
@@ -25,7 +25,8 @@ public class ProfilController : Controller
         return View(new ProfilViewModel
         {
             PunoIme = korisnik!.PunoIme,
-            Email = korisnik.Email
+            Email = korisnik.Email,
+            UrediProfil = uredi
         });
     }
 
@@ -39,9 +40,8 @@ public class ProfilController : Controller
         korisnik.Email = model.Email;
 
         await _context.SaveChangesAsync();
-
-        ViewBag.Poruka = "Profil je uspješno ažuriran.";
-        return View(model);
+        TempData["Poruka"] = "Profil je uspješno ažuriran.";
+        return RedirectToAction(nameof(Index));
     }
 
     public IActionResult PromjenaLozinke() => View();

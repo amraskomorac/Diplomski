@@ -11,8 +11,6 @@ public class DashboardViewModel
     public string SljedeciMaliServis { get; set; } = "Nije moguće odrediti.";
     public string PosljednjiVelikiServis { get; set; } = "Nije evidentiran.";
     public string SljedeciVelikiServis { get; set; } = "Nije moguće odrediti.";
-    public List<string> Upozorenja { get; set; } = [];
-    public List<PodsjetnikViewModel> Podsjetnici { get; set; } = [];
     public List<PodsjetnikViewModel> AktivneObavijesti { get; set; } = [];
     public bool PrikaziObavijesti { get; set; }
     public List<HistorijaRegistracije> HistorijaRegistracija { get; set; } = [];

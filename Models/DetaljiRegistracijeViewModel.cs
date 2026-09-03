@@ -14,7 +14,7 @@ public class DetaljiRegistracijeViewModel : IValidatableObject
     [DataType(DataType.Date)]
     public DateTime DatumIstekaRegistracije { get; set; }
 
-    [Range(0.01, 999999999, ErrorMessage = "Unesite cijenu veću od nule.")]
+    [Range(0.01, 99999999.99, ErrorMessage = "Unesite cijenu između 0,01 i 99.999.999,99 KM.")]
     public decimal Cijena { get; set; }
 
     [Required(ErrorMessage = "Unesite broj police osiguranja.")]

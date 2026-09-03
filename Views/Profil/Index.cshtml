@@ -12,11 +12,11 @@
         <span class="fs-2 text-primary" aria-hidden="true"><i class="bi bi-person-circle"></i></span>
     </div>
 
-    @if (ViewBag.Poruka != null)
+    @if (TempData["Poruka"] is not null)
     {
         <div class="alert alert-success d-flex align-items-center gap-2" role="alert">
             <i class="bi bi-check-circle-fill"></i>
-            <span>@ViewBag.Poruka</span>
+            <span>@TempData["Poruka"]</span>
         </div>
     }
 
@@ -28,18 +28,14 @@
 
             <div class="mb-3">
                 <label asp-for="PunoIme" class="form-label">Puno ime</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
-                    <input asp-for="PunoIme" class="form-control" autocomplete="name" />
-                </div>
+                @if (Model.UrediProfil) { <input asp-for="PunoIme" class="form-control" autocomplete="name" /> }
+                else { <input asp-for="PunoIme" class="form-control profil-polje-samo-za-citanje" autocomplete="name" readonly /> }
             </div>
 
             <div class="mb-4">
                 <label asp-for="Email" class="form-label">E-mail adresa</label>
-                <div class="input-group">
-                    <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
-                    <input asp-for="Email" type="email" class="form-control" autocomplete="email" />
-                </div>
+                @if (Model.UrediProfil) { <input asp-for="Email" type="email" class="form-control" autocomplete="email" /> }
+                else { <input asp-for="Email" type="email" class="form-control profil-polje-samo-za-citanje" autocomplete="email" readonly /> }
             </div>
 
             <div class="profil-tema border-top pt-4 mb-4">
@@ -58,9 +54,14 @@
                 <a asp-action="PromjenaLozinke" class="btn btn-outline-primary">
                     <i class="bi bi-shield-lock me-1"></i> Promijeni lozinku
                 </a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-lg me-1"></i> Sačuvaj promjene
-                </button>
+                @if (Model.UrediProfil)
+                {
+                    <div class="d-flex gap-2"><a asp-action="Index" class="btn btn-outline-secondary">Odustani</a><button type="submit" class="btn btn-primary">Sačuvaj promjene</button></div>
+                }
+                else
+                {
+                    <a asp-action="Index" asp-route-uredi="true" class="btn btn-primary">Uredi profil</a>
+                }
             </div>
         </div>
     </form>
