@@ -10,7 +10,7 @@ namespace DiplomskiApp.Controllers;
 [Authorize]
 public class DokumentiController : Controller
 {
-    private static readonly string[] Tipovi = ["Saobraćajna", "Osiguranje", "Račun", "Servisna knjižica"];
+    private static readonly string[] Tipovi = ["Vozačka dozvola", "Saobraćajna", "Osiguranje"];
     private static readonly string[] DozvoljeneEkstenzije = [".jpg", ".jpeg", ".png", ".pdf"];
     private static readonly string[] DozvoljeniTipovi = ["image/jpeg", "image/png", "application/pdf"];
     private readonly ApplicationDbContext _context;

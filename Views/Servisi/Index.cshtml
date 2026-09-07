@@ -24,11 +24,10 @@
     {
         var kategorije = Model.Select(s => s.Tip).Distinct().OrderBy(t => t).ToList();
         var godine = Model.Select(s => s.Datum.Year).Distinct().OrderByDescending(g => g).ToList();
-        var mjeseci = new[] { "Januar", "Februar", "Mart", "April", "Maj", "Juni", "Juli", "August", "Septembar", "Oktobar", "Novembar", "Decembar" };
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body p-4">
                 <div class="row g-3" aria-label="Filtriranje servisa">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label for="servisKategorija" class="form-label mb-1">Kategorija</label>
                         <select id="servisKategorija" class="form-select">
                             <option value="svi">Sve kategorije</option>
@@ -38,11 +37,11 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <label for="servisPretraga" class="form-label mb-1">Pretraga</label>
                         <input id="servisPretraga" type="search" class="form-control" placeholder="Naziv, kilometraža ili serviser" />
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-4">
                         <label for="servisGodina" class="form-label mb-1">Godina</label>
                         <select id="servisGodina" class="form-select">
                             <option value="">Sve godine</option>
@@ -51,21 +50,6 @@
                                 <option value="@godina">@godina</option>
                             }
                         </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="servisMjesec" class="form-label mb-1">Mjesec</label>
-                        <select id="servisMjesec" class="form-select">
-                            <option value="">Svi mjeseci</option>
-                            @for (var i = 0; i < mjeseci.Length; i++)
-                            {
-                                var vrijednostMjeseca = (i + 1).ToString("D2");
-                                <option value="@vrijednostMjeseca">@mjeseci[i]</option>
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <label for="servisDatum" class="form-label mb-1">Datum</label>
-                        <input id="servisDatum" type="date" class="form-control" title="Odaberite datum" />
                     </div>
                 </div>
             </div>
@@ -134,35 +118,26 @@
         var kategorija = document.getElementById('servisKategorija');
         var pretraga = document.getElementById('servisPretraga');
         var godina = document.getElementById('servisGodina');
-        var mjesec = document.getElementById('servisMjesec');
-        var datum = document.getElementById('servisDatum');
 
         function filtrirajServise() {
-            if (!kategorija || !pretraga || !godina || !mjesec || !datum) return;
+            if (!kategorija || !pretraga || !godina) return;
 
             var odabranaKategorija = kategorija.value;
             var pojam = pretraga.value.trim().toLowerCase();
             var odabranaGodina = godina.value;
-            var odabraniMjesec = mjesec.value;
-            var odabraniDatum = datum.value;
 
             document.querySelectorAll('[data-service-category]').forEach(function (stavka) {
                 var odgovaraKategoriji = odabranaKategorija === 'svi' || stavka.getAttribute('data-service-category') === odabranaKategorija;
                 var odgovaraPretrazi = !pojam || (stavka.dataset.serviceSearch || '').includes(pojam);
                 var datumStavke = stavka.dataset.serviceDate || '';
-                var odgovaraDatumu = odabraniDatum
-                    ? datumStavke === odabraniDatum
-                    : (!odabranaGodina || datumStavke.startsWith(odabranaGodina + '-'))
-                        && (!odabraniMjesec || datumStavke.slice(5, 7) === odabraniMjesec);
+                var odgovaraGodini = !odabranaGodina || datumStavke.startsWith(odabranaGodina + '-');
 
-                stavka.hidden = !odgovaraKategoriji || !odgovaraPretrazi || !odgovaraDatumu;
+                stavka.hidden = !odgovaraKategoriji || !odgovaraPretrazi || !odgovaraGodini;
             });
         }
 
         kategorija?.addEventListener('change', filtrirajServise);
         pretraga?.addEventListener('input', filtrirajServise);
         godina?.addEventListener('change', filtrirajServise);
-        mjesec?.addEventListener('change', filtrirajServise);
-        datum?.addEventListener('change', filtrirajServise);
     </script>
 }

@@ -32,9 +32,12 @@ body {
   color: #fff;
 }
 
-.dokument-kartica {
-  border-left: 4px solid var(--autocare-glavna) !important;
-}
+.dokumenti-lista { display: grid; gap: .85rem; }
+.dokument-stavka { padding: 1rem; border: 1px solid #d9e5e7; border-radius: .65rem; background: #fff; }
+.dokument-stavka .form-label { margin-bottom: .55rem; color: #263940; font-weight: 600; }
+.dokument-upload { display: flex; gap: .65rem; }
+.dokument-upload .form-control { min-width: 0; }
+.dokument-upload .btn { flex: 0 0 auto; }
 
 .btn-primary {
   background-color: var(--autocare-glavna);
@@ -108,7 +111,8 @@ html.tamni-rezim .card,
 html.tamni-rezim .modal-content,
 html.tamni-rezim .podsjetnik,
 html.tamni-rezim .vozilo-izbor-kartica,
-html.tamni-rezim .alert-light {
+html.tamni-rezim .alert-light,
+html.tamni-rezim .dokument-stavka {
   background-color: #1d2d33;
   color: #e7eff1;
 }
@@ -134,7 +138,14 @@ html.tamni-rezim .border,
 html.tamni-rezim .border-top,
 html.tamni-rezim .table > :not(caption) > * > * { border-color: #3f565e !important; }
 html.tamni-rezim .table { --bs-table-bg: #1d2d33; --bs-table-color: #e7eff1; --bs-table-striped-bg: #24383f; }
+html.tamni-rezim .dokument-stavka { border-color: #3f565e; }
+html.tamni-rezim .dokument-stavka .form-label { color: #e7eff1; }
 html.tamni-rezim .btn-outline-secondary { color: #d3e0e4; border-color: #789097; }
 html.tamni-rezim .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
 html.tamni-rezim .vozilo-izbor-kartica:hover { color: #fff; background-color: #29434b; }
 html.tamni-rezim .najskuplji-iznos { color: #82d4df; }
+
+@media (max-width: 575.98px) {
+  .dokument-upload { flex-direction: column; }
+  .dokument-upload .btn { width: 100%; }
+}

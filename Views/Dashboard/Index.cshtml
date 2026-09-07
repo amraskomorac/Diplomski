@@ -81,7 +81,12 @@
 </div>
 
 @{
-    var tipoviDokumenata = new[] { "Saobraćajna", "Osiguranje", "Račun", "Servisna knjižica" };
+    var tipoviDokumenata = new[]
+    {
+        (Tip: "Vozačka dozvola", Naziv: "Vozačka dozvola"),
+        (Tip: "Saobraćajna", Naziv: "Saobraćajna dozvola"),
+        (Tip: "Osiguranje", Naziv: "Polica osiguranja")
+    };
     var povratakNaDashboard = Url.Action("Index", "Dashboard", new { voziloId = Model.OdabranoVozilo?.Id });
 }
 <div class="modal fade" id="dokumentiModal" tabindex="-1" aria-labelledby="dokumentiModalLabel" aria-hidden="true">
@@ -92,43 +97,17 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Zatvori"></button>
             </div>
             <div class="modal-body p-4">
-                <div class="row g-3">
-                    @foreach (var tip in tipoviDokumenata)
+                <div class="dokumenti-lista">
+                    @foreach (var stavka in tipoviDokumenata)
                     {
-                        var dokument = Model.Dokumenti.FirstOrDefault(d => d.Tip == tip);
-                        <div class="col-md-6">
-                            <div class="border rounded-3 p-3 h-100 dokument-kartica">
-                                <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
-                                    <div>
-                                        <h6 class="mb-1">@tip</h6>
-                                        @if (dokument is null)
-                                        {
-                                            <span class="text-muted small">Dokument nije dodan</span>
-                                        }
-                                        else
-                                        {
-                                            <a href="@dokument.Putanja" target="_blank" class="small text-decoration-none">@dokument.NazivDatoteke</a>
-                                            <div class="text-muted small mt-1">Izmijenjen: @dokument.DatumIzmjene.ToLocalTime().ToString("dd.MM.yyyy.")</div>
-                                        }
-                                    </div>
-                                    @if (dokument is not null)
-                                    {
-                                        <form asp-controller="Dokumenti" asp-action="Obrisi" asp-route-id="@dokument.Id" method="post">
-                                            <input type="hidden" name="povratak" value="@povratakNaDashboard" />
-                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Ukloni dokument" onclick="return confirm('Da li želite ukloniti ovaj dokument?');">Ukloni</button>
-                                        </form>
-                                    }
-                                </div>
-                                <form asp-controller="Dokumenti" asp-action="Sacuvaj" method="post" enctype="multipart/form-data">
-                                    <input type="hidden" name="tip" value="@tip" />
-                                    <input type="hidden" name="povratak" value="@povratakNaDashboard" />
-                                    <div class="input-group input-group-sm">
-                                        <input type="file" name="datoteka" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required />
-                                        <button type="submit" class="btn btn-primary">@(dokument is null ? "Upload" : "Zamijeni")</button>
-                                    </div>
-                                    <div class="form-text">JPG, PNG ili PDF, do 5 MB.</div>
-                                </form>
-                            </div>
+                        <div class="dokument-stavka">
+                            <label class="form-label" for="dashboard-datoteka-@stavka.Tip.Replace(" ", "-")">@stavka.Naziv</label>
+                            <form asp-controller="Dokumenti" asp-action="Sacuvaj" method="post" enctype="multipart/form-data" class="dokument-upload">
+                                <input type="hidden" name="tip" value="@stavka.Tip" />
+                                <input type="hidden" name="povratak" value="@povratakNaDashboard" />
+                                <input id="dashboard-datoteka-@stavka.Tip.Replace(" ", "-")" type="file" name="datoteka" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required />
+                                <button type="submit" class="btn btn-primary">Upload</button>
+                            </form>
                         </div>
                     }
                 </div>

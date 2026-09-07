@@ -49,7 +49,7 @@ public class ServisiController : Controller
         var odabranoVozilo = await OdabranoVozilo();
         if (odabranoVozilo is not null)
             servis.VoziloId = odabranoVozilo.Id;
-        await ValidirajVozilo(servis.VoziloId, servis.Kilometraza, korisnikId);
+        await ValidirajVozilo(servis.VoziloId, korisnikId);
         ValidirajRacun(racunDatoteka);
 
         if (!ModelState.IsValid)
@@ -91,7 +91,7 @@ public class ServisiController : Controller
 
         var korisnikId = TrenutniKorisnikId();
         var prethodnoVoziloId = postojeciServis.VoziloId;
-        await ValidirajVozilo(servis.VoziloId, servis.Kilometraza, korisnikId);
+        await ValidirajVozilo(servis.VoziloId, korisnikId);
         ValidirajRacun(racunDatoteka);
 
         if (!ModelState.IsValid)
@@ -171,7 +171,7 @@ public class ServisiController : Controller
             : null;
     }
 
-    private async Task ValidirajVozilo(int? voziloId, int kilometrazaServisa, int korisnikId)
+    private async Task ValidirajVozilo(int? voziloId, int korisnikId)
     {
         var vozilo = voziloId.HasValue
             ? await _context.Vozila.FirstOrDefaultAsync(v => v.Id == voziloId.Value && v.KorisnikId == korisnikId)
@@ -183,8 +183,6 @@ public class ServisiController : Controller
             return;
         }
 
-        if (kilometrazaServisa < vozilo.TrenutnaKilometraza)
-            ModelState.AddModelError(nameof(Servis.Kilometraza), $"Kilometraža servisa ne može biti manja od trenutne kilometraže vozila ({vozilo.TrenutnaKilometraza:N0} km).");
     }
 
     private void ValidirajRacun(IFormFile? racunDatoteka)

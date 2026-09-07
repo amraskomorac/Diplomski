@@ -17,7 +17,7 @@
         {
             <label class="form-label">Vozilo</label>
             <input asp-for="VoziloId" type="hidden" />
-            <div class="form-control bg-light">@nazivVozila</div>
+            <div class="form-control vozilo-odabrano">@nazivVozila</div>
         }
         else
         {
@@ -37,6 +37,7 @@
             {
                 <option value="@tip">@tip</option>
             }
+            <option value="Ostalo">Ostalo</option>
         </select>
         <span asp-validation-for="Tip" class="text-danger"></span>
     </div>
