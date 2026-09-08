@@ -67,7 +67,7 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Auth}/{action=Registracija}/{id?}")
+    pattern: "{controller=Auth}/{action=Prijava}/{id?}")
     .RequireAuthorization();
 
 app.Run();

@@ -18,7 +18,7 @@ public class Vozilo : IValidatableObject
 
     [Required(ErrorMessage = "Unesite model vozila.")]
     [StringLength(60)]
-    [RegularExpression(@"^[A-Za-zČĆŽŠĐčćžšđ]+(?: [A-Za-zČĆŽŠĐčćžšđ]+)*$", ErrorMessage = "Model može sadržavati samo slova i razmake.")]
+    [RegularExpression(@"^[A-Za-zČĆŽŠĐčćžšđ0-9]+(?: [A-Za-zČĆŽŠĐčćžšđ0-9]+)*$", ErrorMessage = "Model može sadržavati slova, brojeve i razmake.")]
     [Column("model")]
     public string Model { get; set; } = "";
 
