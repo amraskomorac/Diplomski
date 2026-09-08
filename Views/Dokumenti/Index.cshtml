@@ -26,8 +26,31 @@
     <div class="dokumenti-lista">
         @foreach (var stavka in tipovi)
         {
+            var dokument = Model.Dokumenti.FirstOrDefault(d => d.Tip == stavka.Tip);
+            var jeSlika = dokument is not null &&
+                (dokument.Putanja.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                 dokument.Putanja.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ||
+                 dokument.Putanja.EndsWith(".png", StringComparison.OrdinalIgnoreCase));
             <div class="dokument-stavka">
                 <label class="form-label" for="datoteka-@stavka.Tip.Replace(" ", "-")">@stavka.Naziv</label>
+                @if (dokument is not null)
+                {
+                    <div class="spremljeni-dokument mb-3">
+                        @if (jeSlika)
+                        {
+                            <a href="@dokument.Putanja" target="_blank" title="Otvori dokument u punoj veličini">
+                                <img src="@dokument.Putanja" alt="@stavka.Naziv" class="pregled-dokumenta" />
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@dokument.Putanja" target="_blank" class="btn btn-outline-danger btn-sm">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>Otvori spremljeni PDF
+                            </a>
+                        }
+                        <div class="small text-muted mt-2">Spremljeno: @dokument.NazivDatoteke</div>
+                    </div>
+                }
                 <form asp-action="Sacuvaj" method="post" enctype="multipart/form-data" class="dokument-upload">
                     <input type="hidden" name="tip" value="@stavka.Tip" />
                     <input id="datoteka-@stavka.Tip.Replace(" ", "-")" type="file" name="datoteka" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required />
